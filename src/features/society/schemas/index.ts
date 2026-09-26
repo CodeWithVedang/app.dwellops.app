@@ -64,3 +64,25 @@ export const resetPasswordSchema = z
   .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "Passwords don't match." });
 
 export const emailTokenSchema = z.object({ token: z.string().min(20).max(200) });
+
+// --- Admin edits -----------------------------------------------------------
+
+export const updateBuildingSchema = createBuildingSchema.extend({ buildingId: z.uuid() });
+
+export const updateUnitSchema = z.object({
+  unitId: z.uuid(),
+  unitNumber: z.string().trim().min(1, "Enter the unit number.").max(20),
+  floor: z.coerce.number().int().min(0).max(200),
+  unitType: z.string().trim().max(40).optional().transform((v) => v || null),
+  areaSqft: z.coerce.number().int().min(1).max(100000).optional().or(z.literal("").transform(() => undefined)),
+  occupancy: z.enum(["VACANT", "OWNER_OCCUPIED", "TENANT_OCCUPIED"]),
+});
+
+export const idSchema = z.object({ id: z.uuid() });
+
+export const changeRoleSchema = z.object({
+  memberId: z.uuid(),
+  role: z.enum(["SOCIETY_ADMIN", "COMMITTEE_MEMBER", "SOCIETY_MANAGER", "ACCOUNTANT", "SECURITY_MANAGER", "STAFF", "VENDOR", "RESIDENT", "TENANT"]),
+});
+
+export const memberStatusSchema = z.object({ memberId: z.uuid(), status: z.enum(["ACTIVE", "DISABLED"]) });

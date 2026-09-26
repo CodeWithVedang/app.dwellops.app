@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
 const control =
   "block w-full rounded-lg border border-border bg-surface px-3 text-sm text-text shadow-xs placeholder:text-subtle hover:border-slate-300 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15 disabled:bg-bg";
@@ -12,7 +12,8 @@ interface FieldProps {
 }
 
 export function Field({ label, name, error, hint, children }: FieldProps) {
-  const id = `f-${name}`;
+  // Unique per instance: the same field name can appear twice on a page (e.g. add form + edit dialog).
+  const id = `f-${name}-${useId().replace(/:/g, "")}`;
   const describedBy = [error?.length ? `${id}-err` : null, hint ? `${id}-hint` : null].filter(Boolean).join(" ") || undefined;
   return (
     <div className="space-y-1.5">

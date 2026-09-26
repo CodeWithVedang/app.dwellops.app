@@ -1,3 +1,4 @@
+import { BuildingActions, UnitActions } from "@/features/society/components/admin-actions";
 import { UnitImport } from "@/features/society/components/unit-import";
 import { Building2 } from "lucide-react";
 
@@ -78,11 +79,12 @@ export default async function SetupPage({ params }: PageProps<"/s/[slug]/setup">
             ) : (
               <div className="flex flex-wrap gap-2">
                 {buildings.map((b) => (
-                  <div key={b.id} className="rounded-xl bg-surface px-4 py-3 text-sm shadow-sm ring-1 ring-border">
-                    <span className="mr-1 rounded-md bg-primary-soft px-1.5 py-0.5 text-xs font-black text-primary">{b.code}</span>{" "}
+                  <div key={b.id} className="flex items-center gap-1 rounded-xl bg-surface py-2 pl-4 pr-2 text-sm shadow-sm ring-1 ring-border">
+                    <span className="mr-1 rounded-md bg-primary-soft px-1.5 py-0.5 text-xs font-black text-primary">{b.code}</span>
                     <span className="text-muted">
                       {b.name} · {b.floors} {b.floors === 1 ? "floor" : "floors"} · {b._count.units} {b._count.units === 1 ? "unit" : "units"}
                     </span>
+                    <BuildingActions slug={slug} b={{ id: b.id, name: b.name, code: b.code, floors: b.floors, units: b._count.units }} />
                   </div>
                 ))}
               </div>
@@ -102,6 +104,9 @@ export default async function SetupPage({ params }: PageProps<"/s/[slug]/setup">
                       <th scope="col" className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-subtle">Floor</th>
                       <th scope="col" className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-subtle">Type</th>
                       <th scope="col" className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-subtle">People</th>
+                      <th scope="col" className="px-4 py-2.5">
+                        <span className="sr-only">Actions</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -113,6 +118,20 @@ export default async function SetupPage({ params }: PageProps<"/s/[slug]/setup">
                         <td className="px-4 py-3 text-muted">{u.unitType ?? "—"}</td>
                         <td className="px-4 py-3 text-muted">
                           {u.members.map((m) => m.member.user.name).join(", ") || "No one yet"}
+                        </td>
+                        <td className="px-2 py-2 text-right">
+                          <UnitActions
+                            slug={slug}
+                            u={{
+                              id: u.id,
+                              unitNumber: u.unitNumber,
+                              floor: u.floor,
+                              unitType: u.unitType,
+                              areaSqft: u.areaSqft,
+                              occupancy: u.occupancy,
+                              linked: u.members.length + u._count.complaints + u._count.parcels,
+                            }}
+                          />
                         </td>
                       </tr>
                     ))}

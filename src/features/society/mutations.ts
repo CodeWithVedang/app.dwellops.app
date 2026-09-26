@@ -13,6 +13,7 @@ import { authService } from "@/server/services/authService";
 import { societyService } from "@/server/services/societyService";
 import { accountService } from "@/server/services/accountService";
 import { unitImportService } from "@/server/services/unitImportService";
+import { adminService } from "@/server/services/adminService";
 
 export type FormState<T = null> = ActionResult<T> | null;
 
@@ -170,5 +171,18 @@ export async function commitUnitImportAction(slug: string, csv: string): Promise
     return unitImportService.commit(ctx, { csv });
   });
   if (r.ok) revalidatePath(`/s/${slug}/setup`);
+  return r;
+}
+
+type AdminOp = "updateBuilding" | "deleteBuilding" | "updateUnit" | "deleteUnit" | "changeRole" | "setMemberStatus" | "revokeInvite";
+
+/** Single entry for admin edit/delete forms; each op authorizes inside adminService. */
+export async function adminOpAction(slug: string, op: AdminOp, _: FormState, fd: FormData): Promise<FormState> {
+  const r = await runAction(`admin.${op}`, async () => {
+    const ctx = await requireSocietyContext(slug);
+    await adminService[op](ctx, formToObject(fd));
+    return null;
+  });
+  if (r.ok) revalidatePath(`/s/${slug}`, "layout");
   return r;
 }

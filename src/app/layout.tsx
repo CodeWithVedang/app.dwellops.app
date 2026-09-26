@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist_Mono, Inter } from "next/font/google";
 import { UpdatePrompt } from "@/components/pwa/update-prompt";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full text-[14px] leading-5">
         {children}
         <UpdatePrompt />
+        <InstallPrompt />
       </body>
     </html>
   );

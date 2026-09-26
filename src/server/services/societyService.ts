@@ -100,6 +100,7 @@ export const societyService = {
       include: {
         building: { select: { code: true, name: true } },
         members: { include: { member: { select: { role: true, user: { select: { name: true } } } } } },
+        _count: { select: { complaints: true, parcels: true } },
       },
     });
   },

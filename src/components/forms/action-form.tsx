@@ -17,16 +17,20 @@ interface Props<T> {
   /** Message shown after success (for actions that don't redirect). */
   successMessage?: string | ((data: T) => ReactNode);
   resetOnSuccess?: boolean;
+  /** Called once per successful submit (e.g. close a dialog). */
+  onSuccess?: () => void;
 }
 
 /** Form wired to a server action: pending state, form-level + field-level errors, success feedback. */
-export function ActionForm<T>({ action, children, className, successMessage, resetOnSuccess = true }: Props<T>) {
+export function ActionForm<T>({ action, children, className, successMessage, resetOnSuccess = true, onSuccess }: Props<T>) {
   const [state, formAction, pending] = useActionState<FormState<T>, FormData>(action, null);
   const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state?.ok && resetOnSuccess) ref.current?.reset();
-  }, [state, resetOnSuccess]);
+    if (state?.ok) onSuccess?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once per new result, not when the callback identity changes
+  }, [state]);
 
   const errors = state && !state.ok ? (state.error.fieldErrors ?? {}) : {};
 

@@ -26,10 +26,10 @@ async function acceptInvite(browser: Browser, url: string): Promise<Page> {
 
 async function invite(page: Page, slug: string, who: { name: string; email: string }, role: string, unit?: string): Promise<string> {
   await ready(page, `/s/${slug}/members`);
-  await page.getByLabel("Name").fill(who.name);
-  await page.getByLabel("Email").fill(who.email);
-  await page.getByLabel("Role").selectOption(role);
-  if (unit) await page.getByLabel("Unit").selectOption({ label: unit });
+  await page.getByLabel("Name", { exact: true }).fill(who.name);
+  await page.getByLabel("Email", { exact: true }).fill(who.email);
+  await page.getByLabel("Role", { exact: true }).selectOption(role);
+  if (unit) await page.getByLabel("Unit", { exact: true }).selectOption({ label: unit });
   await page.getByRole("button", { name: "Create invite" }).click();
   const link = page.getByLabel("Invite link");
   await expect(link).toBeVisible();
@@ -155,4 +155,31 @@ test("admin imports flats from a CSV with a preview", async ({ browser }) => {
   await page.getByRole("button", { name: "Import 2 flats" }).click();
   await expect(page.getByText("2 flats imported. 2 rows were skipped.")).toBeVisible();
   await expect(page.getByRole("cell", { name: "A-202", exact: true })).toBeVisible();
+});
+
+test("admin edits and deletes a flat from the setup page", async ({ browser }) => {
+  const page = await (await browser.newContext()).newPage();
+  await ready(page, "/login");
+  await page.getByLabel("Email").fill(admin.email);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL(/\/societies/);
+  const slug = (await page.getByRole("link", { name: /E2E Heights/ }).getAttribute("href"))!.split("/s/")[1]!;
+  await ready(page, `/s/${slug}/setup`);
+
+  await page.getByRole("button", { name: "Edit flat A-202" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Type").fill("3BHK");
+  await dialog.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(page.getByRole("row", { name: /A-202/ })).toContainText("3BHK");
+
+  await page.getByRole("button", { name: "Delete flat A-202" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete flat" }).click();
+  await expect(page.getByRole("cell", { name: "A-202", exact: true })).toHaveCount(0);
+
+  // Flat with a resident + complaint cannot be deleted.
+  await page.getByRole("button", { name: "Delete flat A-101" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Delete flat" }).click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText("can't be deleted");
 });

@@ -1,3 +1,4 @@
+import { MemberActions, RevokeInvite } from "@/features/society/components/admin-actions";
 import { unitLabel } from "@/lib/units";
 import { Users } from "lucide-react";
 import { hasPermission } from "@/lib/auth/context";
@@ -14,6 +15,7 @@ export default async function MembersPage({ params }: PageProps<"/s/[slug]/membe
   const ctx = await requirePageContext(slug);
   authorizePage(ctx, "member.view");
   const canInvite = hasPermission(ctx, "member.invite");
+  const canManage = hasPermission(ctx, "member.manage");
   const [members, invites, units] = await Promise.all([
     societyService.listMembers(ctx),
     canInvite ? societyService.listPendingInvites(ctx) : Promise.resolve([]),
@@ -47,6 +49,7 @@ export default async function MembersPage({ params }: PageProps<"/s/[slug]/membe
                       {ROLE_LABEL[i.role]}
                       {i.unit ? ` · ${unitLabel(i.unit)}` : ""} · expires{" "}
                       {i.expiresAt.toLocaleDateString("en-IN")}
+                      <RevokeInvite slug={slug} id={i.id} name={i.name} />
                     </span>
                   </li>
                 ))}
@@ -66,6 +69,11 @@ export default async function MembersPage({ params }: PageProps<"/s/[slug]/membe
                       <th scope="col" className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-subtle">Role</th>
                       <th scope="col" className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-subtle">Unit</th>
                       <th scope="col" className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-subtle">Status</th>
+                      {canManage && (
+                        <th scope="col" className="px-4 py-2.5">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -79,9 +87,25 @@ export default async function MembersPage({ params }: PageProps<"/s/[slug]/membe
                         <td className="px-4 py-3 text-muted">
                           {m.unitLinks.map((l) => unitLabel(l.unit)).join(", ") || "—"}
                         </td>
-                        <td className="px-4 py-3 text-muted">
-                          {m.status === "ACTIVE" ? "Active" : m.status === "INVITED" ? "Invited" : "Disabled"}
+                        <td className="px-4 py-3">
+                          {m.status === "ACTIVE" ? (
+                            <span className="text-muted">Active</span>
+                          ) : m.status === "INVITED" ? (
+                            <span className="text-muted">Invited</span>
+                          ) : (
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase text-muted">Removed</span>
+                          )}
                         </td>
+                        {canManage && (
+                          <td className="px-2 py-2 text-right">
+                            <MemberActions
+                              slug={slug}
+                              m={{ id: m.id, name: m.user.name, role: m.role, status: m.status }}
+                              canAdmin={ctx.roles.includes("SOCIETY_ADMIN")}
+                              isSelf={ctx.memberIds.includes(m.id)}
+                            />
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

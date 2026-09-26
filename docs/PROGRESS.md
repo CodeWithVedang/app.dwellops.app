@@ -32,7 +32,22 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Next (PRD §44 order)
 
-Next loop item: **Sprint 2 — complaint photos**: `FileStorage` adapter (local disk in dev, S3-compatible in prod), `file_assets` table, validated image upload (type sniffing, size), authorized download route.
+Next loop item: **Sprint 2 remainder — per-society SLA settings + overdue complaint notifications (background job)**, then Sprint 3 (tasks, vendors, staff attendance).
+
+### Done: complaint photos (2026-09-26)
+
+- `FileStorage` adapter (`src/lib/storage`): S3-compatible in prod (`STORAGE_*` env), local `.storage/` in dev/test, `STORAGE_PROVIDER=local` opt-in for E2E.
+- `file_assets` + `complaint_attachments`. JPG/PNG/WebP sniffed from bytes, 4 MB cap, 6 per complaint, browser-side compression. `/api/files/[id]` checks session + society + complaint visibility; everything else 404.
+
+### Done: admin edit / delete + install prompt (2026-09-26)
+
+- Buildings: edit (floors can't drop below highest flat, code clash blocked), delete only when empty.
+- Flats: edit number/floor/type/area/occupancy, delete only when no residents/complaints/parcels linked.
+- People: change role, remove access (disable, history kept) / restore; never leaves a society without an admin; only admins touch admin roles. Pending invites can be cancelled.
+- All via accessible `<dialog>` with confirmation for destructive actions; every change audited. New permission `member.manage`.
+- PWA install popup: real install on Chrome/Edge/Android, Share → Add to Home Screen steps on iPhone Safari; hidden when installed; "Not now" snoozes 14 days.
+- Fixed duplicate form field ids (labels could point at the wrong input) using `useId`.
+- Tests: 68 unit/integration + 4 E2E.
 
 ### Done: email invites (2026-09-26)
 
