@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 import { authService } from "@/server/services/authService";
 import { societyService } from "@/server/services/societyService";
 import { accountService } from "@/server/services/accountService";
+import { unitImportService } from "@/server/services/unitImportService";
 
 export type FormState<T = null> = ActionResult<T> | null;
 
@@ -152,4 +153,22 @@ export async function signOutEverywhereAction(): Promise<void> {
   await accountService.signOutEverywhere(user.id);
   await destroySession();
   redirect("/login?signedOut=all");
+}
+
+export type UnitImportPreview = Awaited<ReturnType<typeof unitImportService.preview>>;
+
+export async function previewUnitImportAction(slug: string, csv: string): Promise<FormState<UnitImportPreview>> {
+  return runAction("unit.import_preview", async () => {
+    const ctx = await requireSocietyContext(slug);
+    return unitImportService.preview(ctx, { csv });
+  });
+}
+
+export async function commitUnitImportAction(slug: string, csv: string): Promise<FormState<{ imported: number; skipped: number }>> {
+  const r = await runAction("unit.import", async () => {
+    const ctx = await requireSocietyContext(slug);
+    return unitImportService.commit(ctx, { csv });
+  });
+  if (r.ok) revalidatePath(`/s/${slug}/setup`);
+  return r;
 }

@@ -1,3 +1,4 @@
+import { UnitImport } from "@/features/society/components/unit-import";
 import { Building2 } from "lucide-react";
 
 import { authorizePage, requirePageContext } from "@/lib/auth/page";
@@ -58,6 +59,13 @@ export default async function SetupPage({ params }: PageProps<"/s/[slug]/setup">
                 </div>
                 <SubmitButton>Add unit</SubmitButton>
               </ActionForm>
+            )}
+          </Panel>
+          <Panel title="Import flats from CSV">
+            {buildings.length === 0 ? (
+              <p className="text-sm text-muted">Add your buildings first; the CSV refers to them by code.</p>
+            ) : (
+              <UnitImport slug={slug} />
             )}
           </Panel>
         </div>

@@ -33,7 +33,14 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Next (PRD §44 order)
 
-Next loop item: **CSV unit import** (PRD §7: preview valid / invalid / duplicate / missing rows, import only valid rows). Then email invites.
+Next loop item: **Email invites** (send invite link through the email adapter; keep copy-link fallback), then Sprint 2 — complaint photos (file storage adapter).
+
+### Done: CSV unit import (2026-09-26)
+
+- Setup page → "Import flats from CSV": template download, upload, preview with Ready / Invalid / Duplicate / Missing counts and per-row reasons, "show only problems" filter.
+- Pure parser/validator (`src/features/society/csv-import.ts`): quotes, CRLF, BOM, flexible headers; checks building code (this society only), floor range, area, in-file and in-DB duplicates; 1 MB / 2000-row caps.
+- Import re-validates on the server, inserts valid rows in one transaction (`skipDuplicates` guards races), one audit entry. Server action body limit raised to 2 MB for this.
+- Tests: 54 unit/integration + 3 E2E (includes real file upload).
 
 ### Done: account security (2026-09-26)
 
@@ -47,7 +54,7 @@ Next loop item: **CSV unit import** (PRD §7: preview valid / invalid / duplicat
 
 
 1. ~~Finish slice~~ ✅ Milestone 1 complete (2026-09-26)
-2. Sprint 1 remainder: ~~password reset + email verification~~ ✅, CSV unit import, dashboard shell polish
+2. Sprint 1 remainder: ~~password reset + email verification~~ ✅, ~~CSV unit import~~ ✅, email invites
 3. Sprint 2: complaint comments ✔, attachments, email notification provider
 4. Sprint 3: tasks, vendors, staff attendance, announcements
 5. Sprint 4: maintenance invoices, payments, receipts

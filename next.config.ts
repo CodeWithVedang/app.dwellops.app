@@ -6,6 +6,8 @@ const BUILD_ID = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 12) ?? `local-${Dat
 
 const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID },
+  // CSV unit import sends up to 1 MB of text through a server action.
+  experimental: { serverActions: { bodySizeLimit: "2mb" } },
   async headers() {
     return [
       {

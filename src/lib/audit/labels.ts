@@ -8,6 +8,7 @@ const LABELS: Record<string, string> = {
   "member.joined": "joined the society",
   "building.created": "added a building",
   "unit.created": "added a unit",
+  "unit.imported": "imported flats from CSV",
   "complaint.created": "raised a complaint",
   "complaint.acknowledged": "acknowledged a complaint",
   "complaint.assigned": "assigned a complaint",

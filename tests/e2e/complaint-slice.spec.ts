@@ -60,7 +60,7 @@ test("resident complaint goes from report to confirmed fix", async ({ browser })
   await adminPage.getByRole("button", { name: "Add building" }).click();
   await expect(adminPage.getByText("Building added.")).toBeVisible();
 
-  await adminPage.getByLabel("Building").selectOption({ index: 1 });
+  await adminPage.getByLabel("Building", { exact: true }).selectOption({ index: 1 });
   await adminPage.getByLabel("Unit number").fill("A-101");
   await adminPage.getByLabel("Floor", { exact: true }).fill("1");
   await adminPage.getByRole("button", { name: "Add unit" }).click();
@@ -130,4 +130,24 @@ test("resident cannot open admin pages or another society", async ({ browser }) 
   }
   const other = await page.goto("/s/not-my-society");
   expect(other?.status()).toBe(404);
+});
+
+test("admin imports flats from a CSV with a preview", async ({ browser }) => {
+  const page = await (await browser.newContext()).newPage();
+  await ready(page, "/login");
+  await page.getByLabel("Email").fill(admin.email);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL(/\/societies/);
+  const slug = (await page.getByRole("link", { name: /E2E Heights/ }).getAttribute("href"))!.split("/s/")[1]!;
+
+  await ready(page, `/s/${slug}/setup`);
+  const csv = "building_code,unit_number,floor\nA,A-201,2\nA,A-202,2\nA,A-101,1\nZ,Z-1,1\n";
+  await page.locator("#csv-file").setInputFiles({ name: "flats.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+  await expect(page.getByRole("button", { name: "Import 2 flats" })).toBeVisible();
+  await expect(page.getByText("already exists in DwellOps")).toBeVisible();
+  await expect(page.getByText('no building with code "Z"')).toBeVisible();
+  await page.getByRole("button", { name: "Import 2 flats" }).click();
+  await expect(page.getByText("2 flats imported. 2 rows were skipped.")).toBeVisible();
+  await expect(page.getByRole("cell", { name: "A-202", exact: true })).toBeVisible();
 });
