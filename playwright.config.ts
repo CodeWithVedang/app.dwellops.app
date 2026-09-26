@@ -27,6 +27,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { DATABASE_URL: TEST_DB, NEXT_PUBLIC_APP_URL: `http://localhost:${PORT}` },
+    env: { DATABASE_URL: TEST_DB, NEXT_PUBLIC_APP_URL: `http://localhost:${PORT}`, EMAIL_PROVIDER: "console" },
   },
 });

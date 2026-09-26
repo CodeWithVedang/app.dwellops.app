@@ -25,9 +25,7 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Known gaps in the slice
 
-- Email delivery: no provider yet. Invite links are shown to the admin to share. `EmailNotificationProvider` pending.
-- Email verification + password reset flow (PRD §24) not built yet.
-- "Logout all sessions" service exists (`destroyAllSessions`), no UI yet.
+- Invite links are still shown to the admin to share; invite emails via the new email adapter not wired yet.
 - Complaint photos/attachments need file storage adapter (PRD §30).
 - SLA hours are defaults; per-society SLA config not built.
 - Rate limiter is in-memory (per instance).
@@ -35,11 +33,21 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Next (PRD §44 order)
 
-Next loop item: **Sprint 1 remainder — password reset + email verification** (needs EmailNotificationProvider adapter; dev provider logs to console), then CSV unit import.
+Next loop item: **CSV unit import** (PRD §7: preview valid / invalid / duplicate / missing rows, import only valid rows). Then email invites.
+
+### Done: account security (2026-09-26)
+
+- `EmailToken` table: hashed, single-use, purpose-bound; a newer link cancels the older one. Verify link 24 h, reset link 1 h.
+- Email adapter `src/lib/email`: Resend in prod (`EMAIL_API_KEY`, `EMAIL_FROM`), console in dev, memory in tests, `EMAIL_PROVIDER=console` opt-in for E2E/previews. Prod without a key logs a loud error.
+- Signup sends verification; banner with "Resend link" until confirmed. Confirmation is a button press (POST), so mail scanners that pre-open links cannot burn tokens.
+- Forgot password gives the same response for unknown emails; reset signs out every session and also verifies the email.
+- "Sign out everywhere" on the account page; "Set up a new society" collapses for existing members.
+- Auth rate limits keyed by IP + email/token.
+- Tests: 45 unit/integration + 2 E2E passing.
 
 
 1. ~~Finish slice~~ ✅ Milestone 1 complete (2026-09-26)
-2. Sprint 1 remainder: password reset + email verification, CSV unit import, dashboard shell polish
+2. Sprint 1 remainder: ~~password reset + email verification~~ ✅, CSV unit import, dashboard shell polish
 3. Sprint 2: complaint comments ✔, attachments, email notification provider
 4. Sprint 3: tasks, vendors, staff attendance, announcements
 5. Sprint 4: maintenance invoices, payments, receipts

@@ -11,7 +11,7 @@ export { db };
 export async function resetDb(): Promise<void> {
   // The audit trigger blocks UPDATE, not TRUNCATE.
   await db.$executeRawUnsafe(
-    `TRUNCATE "notice_reads","notices","parcels","notifications","complaint_activities","complaints","unit_members","invitations","units","buildings","society_members","audit_logs","sessions","societies","users" CASCADE`,
+    `TRUNCATE "email_tokens","notice_reads","notices","parcels","notifications","complaint_activities","complaints","unit_members","invitations","units","buildings","society_members","audit_logs","sessions","societies","users" CASCADE`,
   );
 }
 
@@ -25,7 +25,7 @@ export async function makeUser(name: string) {
 
 export async function ctxFor(userId: string, slug: string): Promise<SocietyContext> {
   const u = await db.user.findUniqueOrThrow({ where: { id: userId } });
-  return loadSocietyContext({ id: u.id, email: u.email, name: u.name, sessionId: "test" }, slug);
+  return loadSocietyContext({ id: u.id, email: u.email, name: u.name, emailVerified: true, sessionId: "test" }, slug);
 }
 
-export const sessionUser = (u: { id: string; email: string; name: string }) => ({ ...u, sessionId: "test" });
+export const sessionUser = (u: { id: string; email: string; name: string }) => ({ ...u, emailVerified: true, sessionId: "test" });

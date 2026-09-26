@@ -3,24 +3,40 @@ import { ArrowRight, Building2 } from "lucide-react";
 import { Logo } from "@/components/navigation/logo";
 import { requireUserOrRedirect } from "@/lib/auth/session";
 import { societyService } from "@/server/services/societyService";
-import { createSocietyAction, logoutAction } from "@/features/society/mutations";
+import { createSocietyAction, logoutAction, signOutEverywhereAction } from "@/features/society/mutations";
+import { VerifyEmailBanner } from "@/features/society/components/verify-email-form";
+import { Alert } from "@/components/ui/feedback";
 import { ActionForm } from "@/components/forms/action-form";
 import { SubmitButton, TextField } from "@/components/forms/fields";
 import { ROLE_LABEL } from "@/features/society/constants";
 
 export const metadata = { title: "Your societies" };
 
-export default async function SocietiesPage() {
+export default async function SocietiesPage({ searchParams }: PageProps<"/societies">) {
+  const { reset } = await searchParams;
   const user = await requireUserOrRedirect();
   const societies = await societyService.listForUser(user.id);
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <header className="mb-8 flex items-center justify-between">
         <Logo href="/societies" />
-        <form action={logoutAction}>
-          <button className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-text">Sign out ({user.email})</button>
-        </form>
+        <div className="flex items-center gap-1">
+          <form action={logoutAction}>
+            <button className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-text">Sign out</button>
+          </form>
+          <form action={signOutEverywhereAction}>
+            <button className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-text" title="Signs you out on every phone and computer">
+              Sign out everywhere
+            </button>
+          </form>
+        </div>
       </header>
+      {reset === "1" && (
+        <div className="mb-6">
+          <Alert tone="success">Password changed. You were signed out on all other devices.</Alert>
+        </div>
+      )}
+      {!user.emailVerified && <VerifyEmailBanner email={user.email} />}
 
       {societies.length > 0 && (
         <section className="mb-10">
@@ -42,7 +58,8 @@ export default async function SocietiesPage() {
         </section>
       )}
 
-      <section className="rounded-xl bg-surface p-6 shadow-sm ring-1 ring-border">
+      <details open={societies.length === 0} className="group rounded-xl bg-surface p-6 shadow-sm ring-1 ring-border">
+        <summary className="cursor-pointer list-none text-sm font-semibold text-primary group-open:hidden">+ Set up a new society</summary>
         <h2 className="text-lg font-bold tracking-tight">{societies.length ? "Set up another society" : "Set up your society"}</h2>
         <p className="mt-1 text-sm text-muted">You’ll be the society admin. You can add buildings, units and people next.</p>
         <ActionForm action={createSocietyAction} className="mt-5 grid gap-4 sm:grid-cols-2" resetOnSuccess={false}>
@@ -60,7 +77,7 @@ export default async function SocietiesPage() {
             <SubmitButton>Create society</SubmitButton>
           </div>
         </ActionForm>
-      </section>
+      </details>
     </div>
   );
 }

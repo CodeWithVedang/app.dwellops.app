@@ -7,7 +7,7 @@ export default async function globalSetup(): Promise<void> {
   const client = new Client({ connectionString: url });
   await client.connect();
   await client.query(
-    `TRUNCATE "notice_reads","notices","parcels","notifications","complaint_activities","complaints","unit_members","invitations","units","buildings","society_members","audit_logs","sessions","societies","users" CASCADE`,
+    `TRUNCATE "email_tokens","notice_reads","notices","parcels","notifications","complaint_activities","complaints","unit_members","invitations","units","buildings","society_members","audit_logs","sessions","societies","users" CASCADE`,
   );
   await client.end();
 }

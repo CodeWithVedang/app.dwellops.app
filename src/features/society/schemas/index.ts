@@ -50,3 +50,17 @@ export const acceptInviteSchema = z.object({
   token: z.string().min(20).max(200),
   password: z.string().min(10, "Use at least 10 characters.").max(200),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.email("Enter a valid email.").trim().toLowerCase(),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(20).max(200),
+    password: z.string().min(10, "Use at least 10 characters.").max(200),
+    confirm: z.string().max(200),
+  })
+  .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "Passwords don't match." });
+
+export const emailTokenSchema = z.object({ token: z.string().min(20).max(200) });

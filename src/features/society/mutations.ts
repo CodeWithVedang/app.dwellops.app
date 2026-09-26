@@ -11,6 +11,7 @@ import { AppError } from "@/lib/errors";
 import { headers } from "next/headers";
 import { authService } from "@/server/services/authService";
 import { societyService } from "@/server/services/societyService";
+import { accountService } from "@/server/services/accountService";
 
 export type FormState<T = null> = ActionResult<T> | null;
 
@@ -108,4 +109,47 @@ export async function inviteMemberAction(
   });
   if (r.ok) revalidatePath(`/s/${slug}/members`);
   return r;
+}
+
+export async function forgotPasswordAction(_: FormState, fd: FormData): Promise<FormState> {
+  return runAction("auth.forgot", async () => {
+    await limitAuth("forgot", String(fd.get("email") ?? ""));
+    await accountService.requestPasswordReset(formToObject(fd));
+    return null;
+  });
+}
+
+export async function resetPasswordAction(_: FormState, fd: FormData): Promise<FormState> {
+  const r = await runAction("auth.reset", async () => {
+    await limitAuth("reset", String(fd.get("token") ?? ""));
+    const { userId } = await accountService.resetPassword(formToObject(fd));
+    await createSession(userId);
+    return null;
+  });
+  if (r.ok) redirect("/societies?reset=1");
+  return r;
+}
+
+export async function verifyEmailAction(_: FormState<{ verified: boolean }>, fd: FormData): Promise<FormState<{ verified: boolean }>> {
+  return runAction("auth.verify", async () => {
+    const { ok } = await accountService.verifyEmail(formToObject(fd));
+    if (!ok) throw new AppError("NOT_FOUND", "This link is invalid, expired or already used. Sign in and ask for a new one.");
+    return { verified: true };
+  });
+}
+
+export async function resendVerificationAction(): Promise<FormState> {
+  return runAction("auth.resend_verification", async () => {
+    const user = await requireUser();
+    await limitAuth("resend", user.email);
+    if (!user.emailVerified) await accountService.sendVerification(user);
+    return null;
+  });
+}
+
+export async function signOutEverywhereAction(): Promise<void> {
+  const user = await requireUser();
+  await accountService.signOutEverywhere(user.id);
+  await destroySession();
+  redirect("/login?signedOut=all");
 }

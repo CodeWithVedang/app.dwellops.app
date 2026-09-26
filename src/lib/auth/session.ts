@@ -15,6 +15,7 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string;
+  emailVerified: boolean;
   sessionId: string;
 }
 
@@ -46,13 +47,14 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   if (!token) return null;
   const session = await db.session.findUnique({
     where: { tokenHash: hashToken(token) },
-    include: { user: { select: { id: true, email: true, name: true } } },
+    include: { user: { select: { id: true, email: true, name: true, emailVerifiedAt: true } } },
   });
   if (!session || session.expiresAt < new Date()) return null;
   if (Date.now() - session.lastSeenAt.getTime() > REFRESH_AFTER_MS) {
     await db.session.update({ where: { id: session.id }, data: { lastSeenAt: new Date() } });
   }
-  return { ...session.user, sessionId: session.id };
+  const { emailVerifiedAt, ...u } = session.user;
+  return { ...u, emailVerified: !!emailVerifiedAt, sessionId: session.id };
 });
 
 export async function requireUser(): Promise<SessionUser> {

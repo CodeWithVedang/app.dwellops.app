@@ -5,6 +5,7 @@ import { AppError, conflict } from "@/lib/errors";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { hashToken } from "@/lib/auth/tokens";
 import { acceptInviteSchema, loginSchema, signUpSchema } from "@/features/society/schemas";
+import { accountService } from "./accountService";
 
 // Real hash of a random value: unknown emails cost the same verify time as wrong passwords.
 let dummyHash: Promise<string> | undefined;
@@ -19,6 +20,7 @@ export const authService = {
       data: { email: input.email, name: input.name, passwordHash: await hashPassword(input.password) },
     });
     await audit.log(db, { societyId: null, actorId: user.id, action: "user.signup", entityType: "User", entityId: user.id });
+    await accountService.sendVerification(user);
     return { userId: user.id };
   },
 
