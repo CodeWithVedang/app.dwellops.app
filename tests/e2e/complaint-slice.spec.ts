@@ -81,6 +81,11 @@ test("resident complaint goes from report to confirmed fix", async ({ browser })
   await residentPage.waitForURL(/\/complaints\/[0-9a-f-]{36}/);
   await expect(residentPage.getByText("Complaint submitted.")).toBeVisible();
   const complaintPath = new URL(residentPage.url()).pathname;
+  const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(2048)]);
+  await residentPage.getByLabel("Add photos").setInputFiles({ name: "tap.jpg", mimeType: "image/jpeg", buffer: jpeg });
+  await expect(residentPage.getByRole("heading", { name: "Photos (1)" })).toBeVisible();
+  const photoSrc = await residentPage.locator("img[src^=\"/api/files/\"]").first().getAttribute("src");
+  expect((await residentPage.request.get(photoSrc!)).status()).toBe(200);
 
   // --- Admin sees it and assigns staff ---
   await ready(adminPage, `/s/${slug}/complaints?status=NEW`);

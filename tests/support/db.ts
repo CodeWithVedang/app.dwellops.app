@@ -11,7 +11,7 @@ export { db };
 export async function resetDb(): Promise<void> {
   // The audit trigger blocks UPDATE, not TRUNCATE.
   await db.$executeRawUnsafe(
-    `TRUNCATE "email_tokens","notice_reads","notices","parcels","notifications","complaint_activities","complaints","unit_members","invitations","units","buildings","society_members","audit_logs","sessions","societies","users" CASCADE`,
+    `TRUNCATE "complaint_attachments","file_assets","email_tokens","notice_reads","notices","parcels","notifications","complaint_activities","complaints","unit_members","invitations","units","buildings","society_members","audit_logs","sessions","societies","users" CASCADE`,
   );
 }
 

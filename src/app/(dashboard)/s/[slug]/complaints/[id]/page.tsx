@@ -1,3 +1,5 @@
+import { ComplaintPhotos } from "@/features/complaints/components/complaint-photos";
+import { MAX_PHOTOS_PER_COMPLAINT } from "@/lib/storage/images";
 import { requirePageContext } from "@/lib/auth/page";
 import { unitLabel } from "@/lib/units";
 import Link from "next/link";
@@ -56,7 +58,7 @@ export default async function ComplaintDetailPage({ params, searchParams }: Page
           </h1>
         </div>
 
-        {created === "1" && <Alert tone="success">Complaint submitted. We’ll notify you as it moves forward.</Alert>}
+        {created === "1" && <Alert tone="success">Complaint submitted. Add a photo below if it helps — we’ll notify you as it moves forward.</Alert>}
 
         <ComplaintActions
           slug={slug}
@@ -78,6 +80,19 @@ export default async function ComplaintDetailPage({ params, searchParams }: Page
             </div>
           )}
         </section>
+
+        <ComplaintPhotos
+          slug={slug}
+          complaintId={c.id}
+          photos={c.attachments.map((a) => ({ id: a.file.id, name: a.file.originalName }))}
+          canAdd={
+            c.status !== "CLOSED" &&
+            c.status !== "CANCELLED" &&
+            (ctx.memberIds.includes(c.raisedById) || (!!c.assigneeId && ctx.memberIds.includes(c.assigneeId)) || hasPermission(ctx, "complaint.assign"))
+          }
+          max={MAX_PHOTOS_PER_COMPLAINT}
+          highlight={created === "1"}
+        />
 
         <section>
           <h2 className="mb-3 text-sm font-bold">History</h2>

@@ -10,6 +10,10 @@ export const complaintDetailInclude = {
   raisedBy: { select: { id: true, user: { select: { id: true, name: true } } } },
   assignee: { select: { id: true, role: true, user: { select: { id: true, name: true } } } },
   activities: { orderBy: { createdAt: "asc" } },
+  attachments: {
+    orderBy: { createdAt: "asc" },
+    select: { id: true, file: { select: { id: true, originalName: true, uploadedById: true, createdAt: true } } },
+  },
 } satisfies Prisma.ComplaintInclude;
 
 export type ComplaintDetail = Prisma.ComplaintGetPayload<{ include: typeof complaintDetailInclude }>;

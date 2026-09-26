@@ -19,6 +19,7 @@ const LABELS: Record<string, string> = {
   "complaint.reopened": "reopened a complaint",
   "complaint.cancelled": "cancelled a complaint",
   "complaint.commented": "commented on a complaint",
+  "complaint.photo_added": "added a photo to a complaint",
   "notice.drafted": "saved a notice draft",
   "notice.published": "published a notice",
   "notice.archived": "archived a notice",

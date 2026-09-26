@@ -18,6 +18,7 @@
     "test:e2e": "next build && playwright test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1141.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "argon2": "^0.45.1",

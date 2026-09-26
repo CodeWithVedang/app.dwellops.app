@@ -150,6 +150,7 @@ model Society {
   auditLogs   AuditLog[]
   notices     Notice[]
   parcels     Parcel[]
+  files       FileAsset[]
 
   @@map("societies")
 }
@@ -230,6 +231,7 @@ model Unit {
   complaints  Complaint[]
   invitations Invitation[]
   parcels     Parcel[]
+  files       FileAsset[]
 
   @@unique([buildingId, unitNumber])
   @@index([societyId, unitNumber])
@@ -275,11 +277,12 @@ model Complaint {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
-  society    Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
-  unit       Unit?               @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  raisedBy   SocietyMember       @relation("ComplaintRaisedBy", fields: [raisedById], references: [id], onDelete: Restrict)
-  assignee   SocietyMember?      @relation("ComplaintAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  activities ComplaintActivity[]
+  society     Society               @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  unit        Unit?                 @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  raisedBy    SocietyMember         @relation("ComplaintRaisedBy", fields: [raisedById], references: [id], onDelete: Restrict)
+  assignee    SocietyMember?        @relation("ComplaintAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  activities  ComplaintActivity[]
+  attachments ComplaintAttachment[]
 
   @@unique([societyId, number])
   @@index([societyId, status])
@@ -487,4 +490,45 @@ model EmailToken {
 
   @@index([userId, purpose])
   @@map("email_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Files: binary lives in object storage; only metadata here (PRD §30).
+
+enum FilePurpose {
+  COMPLAINT_PHOTO
+}
+
+model FileAsset {
+  id           String      @id @default(uuid()) @db.Uuid
+  societyId    String      @db.Uuid
+  uploadedById String      @db.Uuid
+  purpose      FilePurpose
+  storageKey   String      @unique
+  // Sniffed from file bytes, never taken from the client.
+  mimeType     String
+  sizeBytes    Int
+  originalName String
+  createdAt    DateTime    @default(now())
+
+  society    Society              @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  attachment ComplaintAttachment?
+  unit       Unit?                @relation(fields: [unitId], references: [id])
+  unitId     String?              @db.Uuid
+
+  @@index([societyId, createdAt])
+  @@map("file_assets")
+}
+
+model ComplaintAttachment {
+  id          String   @id @default(uuid()) @db.Uuid
+  complaintId String   @db.Uuid
+  fileId      String   @unique @db.Uuid
+  createdAt   DateTime @default(now())
+
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  file      FileAsset @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([complaintId])
+  @@map("complaint_attachments")
 }

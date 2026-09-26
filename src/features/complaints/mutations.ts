@@ -6,6 +6,8 @@ import { runAction } from "@/lib/actions/result";
 import { formToObject } from "@/lib/actions/form";
 import { requireSocietyContext } from "@/lib/auth/context";
 import { complaintService } from "@/server/services/complaintService";
+import { attachmentService } from "@/server/services/attachmentService";
+import { AppError } from "@/lib/errors";
 import type { FormState } from "@/features/society/mutations";
 
 export async function createComplaintAction(slug: string, _: FormState, fd: FormData): Promise<FormState> {
@@ -46,5 +48,19 @@ export async function complaintOpAction(slug: string, op: Op, _: FormState, fd: 
     return null;
   });
   if (r.ok) revalidatePath(`/s/${slug}/complaints/${input.complaintId ?? ""}`);
+  return r;
+}
+
+/** One photo per call (client compresses first) so each request stays well under host body limits. */
+export async function uploadComplaintPhotoAction(slug: string, fd: FormData): Promise<FormState> {
+  const complaintId = String(fd.get("complaintId") ?? "");
+  const r = await runAction("complaint.photo", async () => {
+    const ctx = await requireSocietyContext(slug);
+    const photo = fd.get("photo");
+    if (!(photo instanceof File)) throw new AppError("VALIDATION", "Choose a photo.", { photo: ["Choose a photo."] });
+    await attachmentService.addComplaintPhoto(ctx, { complaintId }, { name: photo.name, bytes: new Uint8Array(await photo.arrayBuffer()) });
+    return null;
+  });
+  if (r.ok) revalidatePath(`/s/${slug}/complaints/${complaintId}`);
   return r;
 }
