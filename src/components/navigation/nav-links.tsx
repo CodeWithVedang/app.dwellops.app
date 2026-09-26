@@ -10,6 +10,7 @@ import {
   MessageSquareWarning,
   Package,
   ScrollText,
+  Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const ICONS = {
   setup: Building2,
   people: Users,
   audit: ScrollText,
+  settings: Settings,
 } satisfies Record<string, LucideIcon>;
 
 export type NavIcon = keyof typeof ICONS;

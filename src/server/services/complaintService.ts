@@ -143,6 +143,11 @@ export const complaintService = {
       if (!hasPermission(ctx, "complaint.view_all")) where.members = { some: { memberId: { in: ctx.memberIds } } };
       if (!(await db.unit.findFirst({ where, select: { id: true } }))) throw forbidden("You can only raise complaints for your own unit.");
     }
+    const sla = await db.society.findUniqueOrThrow({
+      where: { id: ctx.societyId },
+      select: { slaCriticalHours: true, slaHighHours: true, slaNormalHours: true, slaLowHours: true },
+    });
+    const slaHours = { CRITICAL: sla.slaCriticalHours, HIGH: sla.slaHighHours, NORMAL: sla.slaNormalHours, LOW: sla.slaLowHours };
     const raisedById = ctx.memberIds[0];
     if (!raisedById) throw forbidden();
 
@@ -152,7 +157,7 @@ export const complaintService = {
           const number = await complaintRepository.nextNumber(tx, ctx.societyId);
           const now = new Date();
           const c = await tx.complaint.create({
-            data: { ...input, societyId: ctx.societyId, number, raisedById, dueAt: computeDueAt(now, input.priority) },
+            data: { ...input, societyId: ctx.societyId, number, raisedById, dueAt: computeDueAt(now, input.priority, slaHours) },
           });
           await tx.complaintActivity.create({ data: { complaintId: c.id, actorId: ctx.user.id, type: "CREATED", toStatus: "NEW" } });
           await audit.log(tx, { societyId: ctx.societyId, actorId: ctx.user.id, action: "complaint.created", entityType: "Complaint", entityId: c.id, after: { number, title: c.title, category: c.category, priority: c.priority } });

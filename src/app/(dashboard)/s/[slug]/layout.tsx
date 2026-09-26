@@ -37,6 +37,7 @@ export default async function SocietyLayout({ children, params }: LayoutProps<"/
     ...(hasPermission(ctx, "building.manage") ? [{ href: `${base}/setup`, label: "Buildings & flats", icon: "setup" as const, group: "admin" as const }] : []),
     ...(hasPermission(ctx, "member.view") ? [{ href: `${base}/members`, label: "People", icon: "people" as const, group: "admin" as const }] : []),
     ...(hasPermission(ctx, "audit.view") ? [{ href: `${base}/audit`, label: "Audit log", icon: "audit" as const, group: "admin" as const }] : []),
+    ...(hasPermission(ctx, "society.update") ? [{ href: `${base}/settings`, label: "Settings", icon: "settings" as const, group: "admin" as const }] : []),
   ];
 
   return (

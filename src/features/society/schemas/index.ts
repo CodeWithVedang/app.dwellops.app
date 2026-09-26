@@ -86,3 +86,17 @@ export const changeRoleSchema = z.object({
 });
 
 export const memberStatusSchema = z.object({ memberId: z.uuid(), status: z.enum(["ACTIVE", "DISABLED"]) });
+
+const slaHours = (label: string) => z.coerce.number().int(`${label}: whole hours only.`).min(1, `${label}: at least 1 hour.`).max(720, `${label}: at most 720 hours (30 days).`);
+
+export const updateSocietySchema = createSocietySchema
+  .extend({
+    slaCriticalHours: slaHours("Critical"),
+    slaHighHours: slaHours("High"),
+    slaNormalHours: slaHours("Normal"),
+    slaLowHours: slaHours("Low"),
+  })
+  .refine((v) => v.slaCriticalHours <= v.slaHighHours && v.slaHighHours <= v.slaNormalHours && v.slaNormalHours <= v.slaLowHours, {
+    path: ["slaHighHours"],
+    message: "More urgent priorities need shorter or equal times (Critical ≤ High ≤ Normal ≤ Low).",
+  });

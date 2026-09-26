@@ -4,7 +4,7 @@ import { db } from "@/lib/db/client";
 import { audit } from "@/lib/audit";
 import { authorize, type SocietyContext } from "@/lib/auth/context";
 import { conflict, forbidden, notFound } from "@/lib/errors";
-import { changeRoleSchema, idSchema, memberStatusSchema, updateBuildingSchema, updateUnitSchema } from "@/features/society/schemas";
+import { changeRoleSchema, idSchema, memberStatusSchema, updateBuildingSchema, updateSocietySchema, updateUnitSchema } from "@/features/society/schemas";
 
 const isUnique = (e: unknown) => e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
 
@@ -14,6 +14,26 @@ const isUnique = (e: unknown) => e instanceof Prisma.PrismaClientKnownRequestErr
  * People are never hard-deleted (their complaints and history must survive) — they are disabled.
  */
 export const adminService = {
+  getSettings(ctx: SocietyContext) {
+    authorize(ctx, "society.update");
+    return db.society.findUniqueOrThrow({
+      where: { id: ctx.societyId },
+      select: { name: true, address: true, city: true, state: true, contactEmail: true, contactPhone: true, slaCriticalHours: true, slaHighHours: true, slaNormalHours: true, slaLowHours: true },
+    });
+  },
+
+  /** Society details + complaint SLA hours. New SLA applies to complaints raised from now on. */
+  async updateSociety(ctx: SocietyContext, raw: unknown) {
+    authorize(ctx, "society.update");
+    const input = updateSocietySchema.parse(raw);
+    const before = await adminService.getSettings(ctx);
+    const data = { ...input, contactEmail: input.contactEmail ?? null, contactPhone: input.contactPhone || null };
+    await db.$transaction(async (tx) => {
+      await tx.society.update({ where: { id: ctx.societyId }, data });
+      await audit.log(tx, { societyId: ctx.societyId, actorId: ctx.user.id, action: "society.updated", entityType: "Society", entityId: ctx.societyId, before, after: data });
+    });
+  },
+
   async updateBuilding(ctx: SocietyContext, raw: unknown) {
     authorize(ctx, "building.manage");
     const { buildingId, ...input } = updateBuildingSchema.parse(raw);

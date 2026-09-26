@@ -32,7 +32,13 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Next (PRD §44 order)
 
-Next loop item: **Sprint 2 remainder — per-society SLA settings + overdue complaint notifications (background job)**, then Sprint 3 (tasks, vendors, staff attendance).
+Next loop item: **Sprint 3 — society task manager** (one-off + recurring tasks, checklist, assignee, due date, statuses TODO/IN_PROGRESS/BLOCKED/DONE/CANCELLED, recurring instances via job). Then vendors, staff attendance.
+
+### Done: SLA settings + overdue alerts (2026-09-27) — Sprint 2 complete
+
+- Settings page (admins): society details + complaint response hours per priority (Critical ≤ High ≤ Normal ≤ Low enforced). New complaints use them.
+- `runOverdueComplaintAlerts` job: claims each overdue open complaint once (`overdueNotifiedAt`), alerts assignee or managers, idempotent under concurrent runs.
+- `GET /api/jobs/overdue-complaints` protected by `CRON_SECRET` (constant-time compare); `vercel.json` cron every 15 min. Note: Vercel Hobby only runs crons once a day — use Pro or an external scheduler for 15-min alerts.
 
 ### Done: complaint photos (2026-09-26)
 
@@ -73,7 +79,7 @@ Next loop item: **Sprint 2 remainder — per-society SLA settings + overdue comp
 
 1. ~~Finish slice~~ ✅ Milestone 1 complete (2026-09-26)
 2. Sprint 1 remainder: ~~password reset + email verification~~ ✅, ~~CSV unit import~~ ✅, ~~email invites~~ ✅ (Sprint 1 done)
-3. Sprint 2: complaint comments ✔, attachments, email notification provider
+3. Sprint 2: complaint comments ✔, attachments, email notification provider — ✅ done (photos, SLA settings, overdue alerts)
 4. Sprint 3: tasks, vendors, staff attendance, announcements
 5. Sprint 4: maintenance invoices, payments, receipts
 6. Sprint 5: expenses, approvals, reports

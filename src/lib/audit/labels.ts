@@ -3,6 +3,7 @@ const LABELS: Record<string, string> = {
   "user.signup": "created an account",
   "user.login": "signed in",
   "society.created": "created the society",
+  "society.updated": "updated society settings",
   "member.added": "added a member",
   "member.invited": "sent an invite",
   "member.joined": "joined the society",

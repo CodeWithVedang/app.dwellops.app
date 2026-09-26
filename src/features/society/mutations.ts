@@ -174,7 +174,7 @@ export async function commitUnitImportAction(slug: string, csv: string): Promise
   return r;
 }
 
-type AdminOp = "updateBuilding" | "deleteBuilding" | "updateUnit" | "deleteUnit" | "changeRole" | "setMemberStatus" | "revokeInvite";
+type AdminOp = "updateSociety" | "updateBuilding" | "deleteBuilding" | "updateUnit" | "deleteUnit" | "changeRole" | "setMemberStatus" | "revokeInvite";
 
 /** Single entry for admin edit/delete forms; each op authorizes inside adminService. */
 export async function adminOpAction(slug: string, op: AdminOp, _: FormState, fd: FormData): Promise<FormState> {

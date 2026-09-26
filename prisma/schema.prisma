@@ -128,19 +128,24 @@ model Session {
 }
 
 model Society {
-  id           String   @id @default(uuid()) @db.Uuid
-  slug         String   @unique
-  name         String
-  address      String
-  city         String
-  state        String
-  country      String   @default("India")
-  contactEmail String?
-  contactPhone String?
-  timezone     String   @default("Asia/Kolkata")
-  currency     String   @default("INR")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(uuid()) @db.Uuid
+  slug             String   @unique
+  name             String
+  address          String
+  city             String
+  state            String
+  country          String   @default("India")
+  contactEmail     String?
+  contactPhone     String?
+  timezone         String   @default("Asia/Kolkata")
+  currency         String   @default("INR")
+  // Complaint due times in hours, per priority (PRD §8: editable SLA).
+  slaCriticalHours Int      @default(4)
+  slaHighHours     Int      @default(12)
+  slaNormalHours   Int      @default(48)
+  slaLowHours      Int      @default(72)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   members     SocietyMember[]
   buildings   Building[]
@@ -274,6 +279,8 @@ model Complaint {
   resolutionCostPaise Int?
   resolvedAt          DateTime?
   closedAt            DateTime?
+  // Set when the overdue alert went out, so the job alerts once per complaint.
+  overdueNotifiedAt   DateTime?
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
