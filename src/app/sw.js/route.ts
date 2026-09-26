@@ -9,7 +9,7 @@ const VERSION = process.env.NEXT_PUBLIC_BUILD_ID ?? "dev";
 
 const script = `
 const VERSION = ${JSON.stringify(VERSION)};
-const STATIC_CACHE = "dwellops-static-" + VERSION;
+const STATIC_CACHE = "nivaso-static-" + VERSION;
 const OFFLINE_URL = "/offline";
 const PRECACHE = [OFFLINE_URL, "/icons/192", "/icons/512"];
 
@@ -21,7 +21,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("dwellops-") && k !== STATIC_CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("nivaso-") && k !== STATIC_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });

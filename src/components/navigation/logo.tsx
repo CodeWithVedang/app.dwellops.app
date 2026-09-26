@@ -15,10 +15,10 @@ export function LogoMark({ className = "size-8" }: { className?: string }) {
 /** Wordmark. `tone` picks text color for dark or light backgrounds. */
 export function Logo({ tone = "dark", href = "/" }: { tone?: "dark" | "light"; href?: string }) {
   return (
-    <Link href={href} className="inline-flex items-center gap-2.5" aria-label="DwellOps home">
+    <Link href={href} className="inline-flex items-center gap-2.5" aria-label="Nivaso Plus home">
       <LogoMark />
       <span className={`font-display text-[19px] font-bold tracking-tight ${tone === "light" ? "text-white" : "text-text"}`}>
-        dwell<span className="text-accent">ops</span>
+        nivaso<span className="text-accent">plus</span>
       </span>
     </Link>
   );

@@ -1,6 +1,6 @@
 # UX Engineer Agent
 
-Keep DwellOps simple and operational.
+Keep Nivaso Plus simple and operational.
 
 Rules:
 - one primary action per screen

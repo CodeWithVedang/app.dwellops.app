@@ -1,8 +1,8 @@
-# CLAUDE.md — DwellOps Engineering Constitution
+# CLAUDE.md — Nivaso Plus Engineering Constitution
 
 ## 1. Project
 
-DwellOps is a multi-tenant SaaS operating system for apartment/society committees, managers, residents, staff, and vendors.
+Nivaso Plus is a multi-tenant SaaS operating system for apartment/society committees, managers, residents, staff, and vendors.
 
 Read `PRD.md` before implementing product behavior.
 
@@ -70,7 +70,7 @@ Business rules belong in services/domain modules.
 # 4. Repository Structure
 
 ```text
-dwellops/
+nivaso-plus/
 ├── .claude/
 │   ├── agents/
 │   │   ├── product-architect.md
@@ -730,7 +730,7 @@ must have regression coverage.
 Brand:
 
 ```text
-DwellOps
+Nivaso Plus
 ```
 
 Palette (tokens live in `src/app/globals.css`; never use raw hex in components):
@@ -969,7 +969,7 @@ This is the reference architecture for all later modules.
 
 # 29. Product Quality Rule
 
-DwellOps should always feel like:
+Nivaso Plus should always feel like:
 
 > “I know what is pending, who owns it, what happened, and what I need to do next.”
 

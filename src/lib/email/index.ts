@@ -51,18 +51,18 @@ class ResendEmailProvider implements EmailProvider {
   }
 }
 
-const g = globalThis as unknown as { __dwellopsEmail?: EmailProvider };
+const g = globalThis as unknown as { __nivasoEmail?: EmailProvider };
 
 export function emailProvider(): EmailProvider {
-  if (g.__dwellopsEmail) return g.__dwellopsEmail;
+  if (g.__nivasoEmail) return g.__nivasoEmail;
   const key = process.env.EMAIL_API_KEY;
   let provider: EmailProvider;
   if (process.env.NODE_ENV === "test") provider = new MemoryEmailProvider();
   else if (process.env.EMAIL_PROVIDER === "console") provider = new ConsoleEmailProvider(); // explicit opt-in (E2E, previews)
-  else if (key) provider = new ResendEmailProvider(key, process.env.EMAIL_FROM ?? "DwellOps <no-reply@dwellops.app>");
+  else if (key) provider = new ResendEmailProvider(key, process.env.EMAIL_FROM ?? "Nivaso Plus <no-reply@nivasoplus.app>");
   else if (process.env.NODE_ENV === "production") throw new Error("EMAIL_API_KEY is required in production.");
   else provider = new ConsoleEmailProvider();
-  g.__dwellopsEmail = provider;
+  g.__nivasoEmail = provider;
   return provider;
 }
 
@@ -81,12 +81,12 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 
 /** Simple branded layout with one call-to-action button. */
 export function actionEmail(opts: { to: string; subject: string; heading: string; intro: string; cta: string; url: string; footer: string }): EmailMessage {
-  const text = `${opts.heading}\n\n${opts.intro}\n\n${opts.cta}: ${opts.url}\n\n${opts.footer}\n\n— DwellOps`;
+  const text = `${opts.heading}\n\n${opts.intro}\n\n${opts.cta}: ${opts.url}\n\n${opts.footer}\n\n— Nivaso Plus`;
   const html = `<!doctype html><html><body style="margin:0;background:#F7F6F3;font-family:Inter,Arial,sans-serif;color:#121826">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" style="max-width:480px;background:#fff;border:1px solid #E7E4DE;border-radius:16px">
 <tr><td style="padding:28px">
-<p style="margin:0 0 20px;font-weight:700;font-size:18px">dwell<span style="color:#F4A62A">ops</span></p>
+<p style="margin:0 0 20px;font-weight:700;font-size:18px">nivaso<span style="color:#F4A62A">plus</span></p>
 <h1 style="margin:0 0 12px;font-size:20px">${esc(opts.heading)}</h1>
 <p style="margin:0 0 24px;font-size:14px;line-height:22px;color:#5F6672">${esc(opts.intro)}</p>
 <a href="${esc(opts.url)}" style="display:inline-block;background:#0D7C79;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 18px;border-radius:10px">${esc(opts.cta)}</a>

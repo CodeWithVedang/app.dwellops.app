@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* DwellOps brand tokens (CLAUDE.md §20). Components use these names only. */
+/* Nivaso Plus brand tokens (CLAUDE.md §20). Components use these names only. */
 @theme inline {
   --color-ink: #121826;
   --color-ink-2: #1b2233;

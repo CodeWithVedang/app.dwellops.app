@@ -13,7 +13,7 @@ export default function OfflinePage() {
         </span>
         <h1 className="mt-4 text-2xl font-bold">You&apos;re offline</h1>
         <p className="mt-2 text-sm text-muted">
-          DwellOps needs a connection to show your society&apos;s latest updates. Check your internet and try again.
+          Nivaso Plus needs a connection to show your society&apos;s latest updates. Check your internet and try again.
         </p>
         <a href="/societies" className="mt-6 inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-white">
           Try again

@@ -1,4 +1,4 @@
-# DwellOps SaaS Specification
+# Nivaso Plus SaaS Specification
 
 Files:
 - `PRD.md` — full product requirements and workflows

@@ -1,6 +1,6 @@
-# DwellOps — Product Requirements Document
+# Nivaso Plus — Product Requirements Document
 
-**Product:** DwellOps  
+**Product:** Nivaso Plus  
 **Tagline:** Simple operations for better-managed societies.  
 **Document:** Full SaaS PRD  
 **Version:** 1.0  
@@ -14,7 +14,7 @@
 
 # 1. Product Vision
 
-DwellOps is a simple operating system for apartment/society committees, managers, staff, vendors, and residents.
+Nivaso Plus is a simple operating system for apartment/society committees, managers, staff, vendors, and residents.
 
 The product replaces fragmented WhatsApp messages, spreadsheets, paper registers, phone calls, and manual follow-ups with a single operational workspace.
 
@@ -22,7 +22,7 @@ The core principle is:
 
 > **Every issue, payment, expense, task, vendor, vehicle, parcel, announcement, movement request, and committee decision should have a clear owner, status, history, and next action.**
 
-DwellOps must not feel like enterprise ERP software. It should feel like a modern, simple operations tool that a society committee can start using without training.
+Nivaso Plus must not feel like enterprise ERP software. It should feel like a modern, simple operations tool that a society committee can start using without training.
 
 ---
 
@@ -1215,7 +1215,7 @@ Avoid forcing users to configure every module before using the product.
 
 ## Brand
 
-**Name:** DwellOps
+**Name:** Nivaso Plus
 
 **Positioning:** Operations platform for apartment societies.
 
@@ -1602,7 +1602,7 @@ Business:
 
 # 46. Core Product Promise
 
-DwellOps should answer four questions immediately:
+Nivaso Plus should answer four questions immediately:
 
 1. **What needs attention?**
 2. **Who is responsible?**

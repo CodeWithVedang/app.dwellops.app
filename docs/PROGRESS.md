@@ -1,4 +1,4 @@
-# DwellOps build progress
+# Nivaso Plus build progress
 
 Source of truth for the `/loop` build. Each iteration picks the first unchecked item.
 

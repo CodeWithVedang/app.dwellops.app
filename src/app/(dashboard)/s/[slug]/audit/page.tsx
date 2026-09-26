@@ -35,7 +35,7 @@ export default async function AuditPage({ params, searchParams }: PageProps<"/s/
         actions={entityId && <Link href={base} className={buttonClass("secondary")}>Show all</Link>}
       />
       {result.items.length === 0 ? (
-        <EmptyState icon={ScrollText} title="No audit entries" body="Changes will be recorded here as people use DwellOps." />
+        <EmptyState icon={ScrollText} title="No audit entries" body="Changes will be recorded here as people use Nivaso Plus." />
       ) : (
         <div className="overflow-x-auto rounded-xl bg-surface shadow-sm ring-1 ring-border">
           <table className="w-full min-w-[720px] text-left text-sm">

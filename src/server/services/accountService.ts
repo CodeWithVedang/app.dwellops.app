@@ -41,12 +41,12 @@ export const accountService = {
     await sendEmail(
       actionEmail({
         to: user.email,
-        subject: "Confirm your email for DwellOps",
+        subject: "Confirm your email for Nivaso Plus",
         heading: `Hi ${user.name.split(" ")[0]}, confirm your email`,
         intro: "Confirming your email lets us send you password resets and important society updates.",
         cta: "Confirm email",
         url: `${appUrl()}/verify-email/${token}`,
-        footer: "This link works for 24 hours. If you didn't create a DwellOps account, ignore this email.",
+        footer: "This link works for 24 hours. If you didn't create a Nivaso Plus account, ignore this email.",
       }),
     );
   },
@@ -77,7 +77,7 @@ export const accountService = {
     await sendEmail(
       actionEmail({
         to: user.email,
-        subject: "Reset your DwellOps password",
+        subject: "Reset your Nivaso Plus password",
         heading: "Reset your password",
         intro: "Someone (hopefully you) asked to reset the password for this email. Choose a new one using the button below.",
         cta: "Choose a new password",

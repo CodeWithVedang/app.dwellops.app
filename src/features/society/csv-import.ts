@@ -117,7 +117,7 @@ export function validateUnitCsv(text: string, ctx: ImportContext): ParseOutcome 
     if (errors.length || !building) return { line, raw, status: "invalid", errors };
 
     const key = unitKey(building.id, raw.unit_number);
-    if (ctx.existing.has(key)) return { line, raw, status: "duplicate", errors: ["already exists in DwellOps"] };
+    if (ctx.existing.has(key)) return { line, raw, status: "duplicate", errors: ["already exists in Nivaso Plus"] };
     if (seen.has(key)) return { line, raw, status: "duplicate", errors: ["appears earlier in this file"] };
     seen.add(key);
 

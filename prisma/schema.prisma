@@ -1,4 +1,4 @@
-// DwellOps schema — vertical slice (society → building → unit → resident → complaint → audit → notification).
+// Nivaso Plus schema — vertical slice (society → building → unit → resident → complaint → audit → notification).
 // Money: integer minor units (paise). IDs: UUID. Timestamps: DB-generated.
 
 generator client {

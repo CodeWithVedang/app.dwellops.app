@@ -145,7 +145,7 @@ test("admin imports flats from a CSV with a preview", async ({ browser }) => {
   const csv = "building_code,unit_number,floor\nA,A-201,2\nA,A-202,2\nA,A-101,1\nZ,Z-1,1\n";
   await page.locator("#csv-file").setInputFiles({ name: "flats.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
   await expect(page.getByRole("button", { name: "Import 2 flats" })).toBeVisible();
-  await expect(page.getByText("already exists in DwellOps")).toBeVisible();
+  await expect(page.getByText("already exists in Nivaso Plus")).toBeVisible();
   await expect(page.getByText('no building with code "Z"')).toBeVisible();
   await page.getByRole("button", { name: "Import 2 flats" }).click();
   await expect(page.getByText("2 flats imported. 2 rows were skipped.")).toBeVisible();

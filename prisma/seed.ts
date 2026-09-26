@@ -1,6 +1,6 @@
 // DEVELOPMENT DATA ONLY. Refuses to run in production.
 // Creates one society with a manager, resident and staff member so the UI can be exercised locally.
-// Login: admin@ / resident@ / staff@ / guard@dev.dwellops.test — password: dev-password-123
+// Login: admin@ / resident@ / staff@ / guard@dev.nivasoplus.test — password: dev-password-123
 import "dotenv/config";
 import argon2 from "argon2";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -16,11 +16,11 @@ const HOUR = 3600_000;
 async function seedCommunity() {
   const society = await db.society.findUniqueOrThrow({ where: { slug: "dev-green-meadows" } });
   if (await db.notice.count({ where: { societyId: society.id } })) return;
-  const admin = await db.user.findUniqueOrThrow({ where: { email: "admin@dev.dwellops.test" } });
+  const admin = await db.user.findUniqueOrThrow({ where: { email: "admin@dev.nivasoplus.test" } });
   const guardUser =
-    (await db.user.findUnique({ where: { email: "guard@dev.dwellops.test" } })) ??
+    (await db.user.findUnique({ where: { email: "guard@dev.nivasoplus.test" } })) ??
     (await db.user.create({
-      data: { email: "guard@dev.dwellops.test", name: "Ramesh Yadav", passwordHash: await argon2.hash(PASSWORD, { type: argon2.argon2id }), emailVerifiedAt: new Date() },
+      data: { email: "guard@dev.nivasoplus.test", name: "Ramesh Yadav", passwordHash: await argon2.hash(PASSWORD, { type: argon2.argon2id }), emailVerifiedAt: new Date() },
     }));
   await db.societyMember.upsert({
     where: { societyId_userId_role: { societyId: society.id, userId: guardUser.id, role: "SECURITY_MANAGER" } },
@@ -69,7 +69,7 @@ async function seedCommunity() {
       { societyId: society.id, number: 2, unitId: unit.id, courier: "Blue Dart", pickupCode: "1937", status: "NOTIFIED", receivedById: guardUser.id, receivedAt: new Date(now - 60 * HOUR) },
     ],
   });
-  console.log("Dev community data added (guard@dev.dwellops.test).");
+  console.log("Dev community data added (guard@dev.nivasoplus.test).");
 }
 
 async function main() {
@@ -82,9 +82,9 @@ async function main() {
     db.user.create({ data: { email, name, passwordHash, emailVerifiedAt: new Date() } });
 
   const [admin, resident, staff] = await Promise.all([
-    mkUser("admin@dev.dwellops.test", "Asha Kulkarni"),
-    mkUser("resident@dev.dwellops.test", "Ravi Mehta"),
-    mkUser("staff@dev.dwellops.test", "Sunil Pawar"),
+    mkUser("admin@dev.nivasoplus.test", "Asha Kulkarni"),
+    mkUser("resident@dev.nivasoplus.test", "Ravi Mehta"),
+    mkUser("staff@dev.nivasoplus.test", "Sunil Pawar"),
   ]);
 
   const society = await db.society.create({
@@ -146,7 +146,7 @@ async function main() {
     });
   }
   await seedCommunity();
-  console.log(`Dev seed created. Sign in with admin@dev.dwellops.test / ${PASSWORD}`);
+  console.log(`Dev seed created. Sign in with admin@dev.nivasoplus.test / ${PASSWORD}`);
   void mAdmin;
 }
 

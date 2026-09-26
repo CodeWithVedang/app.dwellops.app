@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <>
       <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
-      <p className="mt-1 text-sm text-muted">Welcome back to DwellOps.</p>
+      <p className="mt-1 text-sm text-muted">Welcome back to Nivaso Plus.</p>
       {signedOut === "all" && (
         <div className="mt-4">
           <Alert tone="success">You were signed out on all devices.</Alert>

@@ -63,7 +63,7 @@ export const authService = {
       let user = await tx.user.findUnique({ where: { email: invite.email } });
       if (user?.passwordHash) {
         if (!(await verifyPassword(user.passwordHash, input.password))) {
-          throw new AppError("VALIDATION", "Password is incorrect.", { password: ["Enter your existing DwellOps password."] });
+          throw new AppError("VALIDATION", "Password is incorrect.", { password: ["Enter your existing Nivaso Plus password."] });
         }
       } else if (user) {
         user = await tx.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(input.password), emailVerifiedAt: new Date() } });

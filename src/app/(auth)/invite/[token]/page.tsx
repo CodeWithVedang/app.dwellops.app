@@ -35,7 +35,7 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
           <span className="text-muted">Email</span> <span className="font-medium">{invite.email}</span>
         </div>
         <TextField
-          label={invite.hasAccount ? "Your DwellOps password" : "Choose a password"}
+          label={invite.hasAccount ? "Your Nivaso Plus password" : "Choose a password"}
           name="password"
           type="password"
           autoComplete={invite.hasAccount ? "current-password" : "new-password"}

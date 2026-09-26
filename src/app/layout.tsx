@@ -8,10 +8,10 @@ const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: [
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "DwellOps", template: "%s · DwellOps" },
+  title: { default: "Nivaso Plus", template: "%s · Nivaso Plus" },
   description: "Complaints, notices and parcels for your housing society — in one place.",
-  applicationName: "DwellOps",
-  appleWebApp: { capable: true, title: "DwellOps", statusBarStyle: "default" },
+  applicationName: "Nivaso Plus",
+  appleWebApp: { capable: true, title: "Nivaso Plus", statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 

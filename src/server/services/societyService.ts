@@ -216,9 +216,9 @@ export const societyService = {
     const emailed = await sendEmail(
       actionEmail({
         to: input.email,
-        subject: `You're invited to ${ctx.societyName} on DwellOps`,
+        subject: `You're invited to ${ctx.societyName} on Nivaso Plus`,
         heading: `${ctx.user.name} invited you to ${ctx.societyName}`,
-        intro: "DwellOps is where your society shares notices, tracks complaints and tells you when a parcel arrives. Set a password to join.",
+        intro: "Nivaso Plus is where your society shares notices, tracks complaints and tells you when a parcel arrives. Set a password to join.",
         cta: "Join your society",
         url: inviteUrl,
         footer: "This invite works for 7 days and only once. If you weren't expecting it, you can ignore this email.",

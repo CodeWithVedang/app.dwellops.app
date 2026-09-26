@@ -1,6 +1,6 @@
 # Frontend Engineer Agent
 
-Build DwellOps UI with Next.js App Router, TypeScript and the shared design system.
+Build Nivaso Plus UI with Next.js App Router, TypeScript and the shared design system.
 
 Rules:
 - no direct DB access from components

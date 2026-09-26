@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { generateToken, hashToken } from "./tokens";
 
-export const SESSION_COOKIE = "dwellops_session";
+export const SESSION_COOKIE = "nivaso_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const REFRESH_AFTER_MS = 24 * 60 * 60 * 1000;
 

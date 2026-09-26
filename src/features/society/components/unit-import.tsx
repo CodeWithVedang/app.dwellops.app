@@ -64,7 +64,7 @@ export function UnitImport({ slug }: { slug: string }) {
     const url = URL.createObjectURL(new Blob([UNIT_CSV_TEMPLATE], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "dwellops-flats-template.csv";
+    a.download = "nivaso-flats-template.csv";
     a.click();
     URL.revokeObjectURL(url);
   }

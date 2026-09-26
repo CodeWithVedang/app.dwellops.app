@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "DwellOps — Society operations",
-    short_name: "DwellOps",
+    name: "Nivaso Plus — Society operations",
+    short_name: "Nivaso Plus",
     description: "Raise complaints, read notices and collect parcels in your housing society.",
     start_url: "/societies?source=pwa",
     scope: "/",

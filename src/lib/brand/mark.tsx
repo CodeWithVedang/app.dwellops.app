@@ -1,5 +1,5 @@
 /**
- * DwellOps brand mark for generated images (app icons, PWA icons).
+ * Nivaso Plus brand mark for generated images (app icons, PWA icons).
  * Inline styles only — ImageResponse does not read Tailwind classes.
  * Glyph: a roof over a lit window (saffron) — "someone is home and on it".
  */

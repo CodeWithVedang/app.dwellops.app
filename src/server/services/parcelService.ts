@@ -134,7 +134,7 @@ export const parcelService = {
     if (!p) throw notFound("Parcel");
     if (!WAITING.includes(p.status as (typeof WAITING)[number])) throw conflict("This parcel was already handed over or returned.");
     if (!codesMatch(p.pickupCode, input.code)) {
-      throw new AppError("VALIDATION", "That code doesn't match.", { code: ["That code doesn't match. Ask the resident to check the DwellOps app."] });
+      throw new AppError("VALIDATION", "That code doesn't match.", { code: ["That code doesn't match. Ask the resident to check the Nivaso Plus app."] });
     }
     await db.$transaction(async (tx) => {
       const r = await tx.parcel.updateMany({
