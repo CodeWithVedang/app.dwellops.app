@@ -83,3 +83,19 @@ describe("email verification and password reset", () => {
     expect(await accountService.isResetTokenValid(token)).toBe(false);
   });
 });
+
+describe("email invites", () => {
+  it("emails the invite link to the invitee", async () => {
+    const { makeUser, sessionUser, ctxFor } = await import("../../support/db");
+    const { societyService } = await import("@/server/services/societyService");
+    const admin = await makeUser("Inviter");
+    const slug = (await societyService.createSociety(sessionUser(admin), { name: "Mail Court", address: "4 Mail Road", city: "Pune", state: "MH" })).slug;
+    const ctx = await ctxFor(admin.id, slug);
+    const res = await societyService.inviteMember(ctx, { name: "Nita", email: "nita@example.test", role: "STAFF" });
+    expect(res.emailed).toBe(true);
+    const msg = outbox().at(-1)!;
+    expect(msg.to).toBe("nita@example.test");
+    expect(msg.subject).toContain("Mail Court");
+    expect(msg.text).toContain(res.inviteUrl);
+  });
+});

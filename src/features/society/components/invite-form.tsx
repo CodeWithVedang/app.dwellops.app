@@ -19,12 +19,14 @@ export function InviteForm({ slug, units, canInviteAdmin }: Props) {
   const roles = (Object.keys(ROLE_LABEL) as SocietyRole[]).filter((r) => canInviteAdmin || r !== "SOCIETY_ADMIN");
 
   return (
-    <ActionForm<{ inviteUrl: string; email: string }>
+    <ActionForm<{ inviteUrl: string; email: string; emailed: boolean }>
       action={inviteMemberAction.bind(null, slug)}
       className="space-y-3"
       successMessage={(d) => (
         <span>
-          Invite created for {d.email}. Share this link with them (valid 7 days):
+          {d.emailed
+            ? `Invite emailed to ${d.email}. You can also share this link on WhatsApp (valid 7 days):`
+            : `We couldn't email ${d.email} right now. Share this link with them instead (valid 7 days):`}
           <input
             readOnly
             value={d.inviteUrl}

@@ -25,7 +25,6 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Known gaps in the slice
 
-- Invite links are still shown to the admin to share; invite emails via the new email adapter not wired yet.
 - Complaint photos/attachments need file storage adapter (PRD §30).
 - SLA hours are defaults; per-society SLA config not built.
 - Rate limiter is in-memory (per instance).
@@ -33,7 +32,11 @@ Source of truth for the `/loop` build. Each iteration picks the first unchecked 
 
 ## Next (PRD §44 order)
 
-Next loop item: **Email invites** (send invite link through the email adapter; keep copy-link fallback), then Sprint 2 — complaint photos (file storage adapter).
+Next loop item: **Sprint 2 — complaint photos**: `FileStorage` adapter (local disk in dev, S3-compatible in prod), `file_assets` table, validated image upload (type sniffing, size), authorized download route.
+
+### Done: email invites (2026-09-26)
+
+- Invites are emailed via the email adapter (branded button email, 7-day validity). Copy-link stays for WhatsApp sharing; if sending fails the UI says so and the link still works.
 
 ### Done: CSV unit import (2026-09-26)
 
@@ -54,7 +57,7 @@ Next loop item: **Email invites** (send invite link through the email adapter; k
 
 
 1. ~~Finish slice~~ ✅ Milestone 1 complete (2026-09-26)
-2. Sprint 1 remainder: ~~password reset + email verification~~ ✅, ~~CSV unit import~~ ✅, email invites
+2. Sprint 1 remainder: ~~password reset + email verification~~ ✅, ~~CSV unit import~~ ✅, ~~email invites~~ ✅ (Sprint 1 done)
 3. Sprint 2: complaint comments ✔, attachments, email notification provider
 4. Sprint 3: tasks, vendors, staff attendance, announcements
 5. Sprint 4: maintenance invoices, payments, receipts

@@ -101,9 +101,9 @@ export async function createUnitAction(slug: string, _: FormState, fd: FormData)
 
 export async function inviteMemberAction(
   slug: string,
-  _: FormState<{ inviteUrl: string; email: string }>,
+  _: FormState<{ inviteUrl: string; email: string; emailed: boolean }>,
   fd: FormData,
-): Promise<FormState<{ inviteUrl: string; email: string }>> {
+): Promise<FormState<{ inviteUrl: string; email: string; emailed: boolean }>> {
   const r = await runAction("member.invite", async () => {
     const ctx = await requireSocietyContext(slug);
     return societyService.inviteMember(ctx, formToObject(fd));

@@ -10,6 +10,7 @@ import { generateToken, hashToken } from "@/lib/auth/tokens";
 import { conflict, notFound } from "@/lib/errors";
 import { ASSIGNABLE_ROLES } from "@/lib/permissions";
 import { notify } from "@/lib/notifications";
+import { actionEmail, sendEmail } from "@/lib/email";
 import { createBuildingSchema, createSocietySchema, createUnitSchema, inviteMemberSchema } from "@/features/society/schemas";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -156,7 +157,7 @@ export const societyService = {
   async inviteMember(
     ctx: SocietyContext,
     raw: unknown,
-  ): Promise<{ inviteUrl: string; email: string }> {
+  ): Promise<{ inviteUrl: string; email: string; emailed: boolean }> {
     authorize(ctx, "member.invite");
     const input = inviteMemberSchema.parse(raw);
     if (input.role === "SOCIETY_ADMIN" && !ctx.roles.includes("SOCIETY_ADMIN")) {
@@ -211,7 +212,19 @@ export const societyService = {
         link: invitePath,
       });
     }
-    return { inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}${invitePath}`, email: input.email };
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}${invitePath}`;
+    const emailed = await sendEmail(
+      actionEmail({
+        to: input.email,
+        subject: `You're invited to ${ctx.societyName} on DwellOps`,
+        heading: `${ctx.user.name} invited you to ${ctx.societyName}`,
+        intro: "DwellOps is where your society shares notices, tracks complaints and tells you when a parcel arrives. Set a password to join.",
+        cta: "Join your society",
+        url: inviteUrl,
+        footer: "This invite works for 7 days and only once. If you weren't expecting it, you can ignore this email.",
+      }),
+    );
+    return { inviteUrl, email: input.email, emailed };
   },
 
   listAssignees(ctx: SocietyContext) {
