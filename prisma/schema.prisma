@@ -1,0 +1,466 @@
+// DwellOps schema — vertical slice (society → building → unit → resident → complaint → audit → notification).
+// Money: integer minor units (paise). IDs: UUID. Timestamps: DB-generated.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SocietyRole {
+  SOCIETY_ADMIN
+  COMMITTEE_MEMBER
+  SOCIETY_MANAGER
+  ACCOUNTANT
+  SECURITY_MANAGER
+  STAFF
+  VENDOR
+  RESIDENT
+  TENANT
+}
+
+enum MemberStatus {
+  INVITED
+  ACTIVE
+  DISABLED
+}
+
+enum OccupancyStatus {
+  VACANT
+  OWNER_OCCUPIED
+  TENANT_OCCUPIED
+}
+
+enum UnitRelation {
+  OWNER
+  TENANT
+  FAMILY
+}
+
+enum ComplaintStatus {
+  NEW
+  ACKNOWLEDGED
+  ASSIGNED
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+}
+
+enum ComplaintCategory {
+  PLUMBING
+  ELECTRICAL
+  CIVIL
+  LIFT
+  CLEANING
+  SECURITY
+  WATER
+  PARKING
+  COMMON_AREA
+  OTHER
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum ComplaintActivityType {
+  CREATED
+  STATUS_CHANGED
+  ASSIGNED
+  COMMENT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  WHATSAPP
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  name            String
+  phone           String?
+  passwordHash    String?
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sessions      Session[]
+  memberships   SocietyMember[]
+  notifications Notification[]
+  noticeReads   NoticeRead[]
+
+  @@map("users")
+}
+
+model Session {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  // SHA-256 of the opaque cookie token; raw token never stored.
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  userAgent  String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Society {
+  id           String   @id @default(uuid()) @db.Uuid
+  slug         String   @unique
+  name         String
+  address      String
+  city         String
+  state        String
+  country      String   @default("India")
+  contactEmail String?
+  contactPhone String?
+  timezone     String   @default("Asia/Kolkata")
+  currency     String   @default("INR")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  members     SocietyMember[]
+  buildings   Building[]
+  units       Unit[]
+  complaints  Complaint[]
+  invitations Invitation[]
+  auditLogs   AuditLog[]
+  notices     Notice[]
+  parcels     Parcel[]
+
+  @@map("societies")
+}
+
+model SocietyMember {
+  id        String       @id @default(uuid()) @db.Uuid
+  societyId String       @db.Uuid
+  userId    String       @db.Uuid
+  role      SocietyRole
+  status    MemberStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  society            Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unitLinks          UnitMember[]
+  raisedComplaints   Complaint[]  @relation("ComplaintRaisedBy")
+  assignedComplaints Complaint[]  @relation("ComplaintAssignee")
+
+  @@unique([societyId, userId, role])
+  @@index([societyId, userId])
+  @@map("society_members")
+}
+
+model Invitation {
+  id          String        @id @default(uuid()) @db.Uuid
+  societyId   String        @db.Uuid
+  email       String
+  name        String
+  role        SocietyRole
+  unitId      String?       @db.Uuid
+  relation    UnitRelation?
+  tokenHash   String        @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String        @db.Uuid
+  createdAt   DateTime      @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  unit    Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  @@index([societyId, email])
+  @@map("invitations")
+}
+
+model Building {
+  id        String   @id @default(uuid()) @db.Uuid
+  societyId String   @db.Uuid
+  name      String
+  code      String
+  floors    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  society Society  @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  units   Unit[]
+  notices Notice[]
+
+  @@unique([societyId, code])
+  @@map("buildings")
+}
+
+model Unit {
+  id         String          @id @default(uuid()) @db.Uuid
+  societyId  String          @db.Uuid
+  buildingId String          @db.Uuid
+  unitNumber String
+  floor      Int
+  unitType   String?
+  areaSqft   Int?
+  occupancy  OccupancyStatus @default(VACANT)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  society     Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  building    Building     @relation(fields: [buildingId], references: [id], onDelete: Restrict)
+  members     UnitMember[]
+  complaints  Complaint[]
+  invitations Invitation[]
+  parcels     Parcel[]
+
+  @@unique([buildingId, unitNumber])
+  @@index([societyId, unitNumber])
+  @@map("units")
+}
+
+model UnitMember {
+  id        String       @id @default(uuid()) @db.Uuid
+  unitId    String       @db.Uuid
+  memberId  String       @db.Uuid
+  relation  UnitRelation
+  createdAt DateTime     @default(now())
+
+  unit   Unit          @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  member SocietyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, memberId])
+  @@index([memberId])
+  @@map("unit_members")
+}
+
+model Complaint {
+  id                  String            @id @default(uuid()) @db.Uuid
+  societyId           String            @db.Uuid
+  // Human-friendly per-society sequence, e.g. #42.
+  number              Int
+  unitId              String?           @db.Uuid
+  raisedById          String            @db.Uuid
+  assigneeId          String?           @db.Uuid
+  category            ComplaintCategory
+  title               String
+  description         String
+  location            String?
+  priority            Priority          @default(NORMAL)
+  preferredAccessTime String?
+  status              ComplaintStatus   @default(NEW)
+  dueAt               DateTime
+  expectedCompletion  DateTime?
+  resolutionNote      String?
+  resolutionCostPaise Int?
+  resolvedAt          DateTime?
+  closedAt            DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  society    Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  unit       Unit?               @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  raisedBy   SocietyMember       @relation("ComplaintRaisedBy", fields: [raisedById], references: [id], onDelete: Restrict)
+  assignee   SocietyMember?      @relation("ComplaintAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  activities ComplaintActivity[]
+
+  @@unique([societyId, number])
+  @@index([societyId, status])
+  @@index([societyId, assigneeId])
+  @@index([societyId, createdAt])
+  @@map("complaints")
+}
+
+model ComplaintActivity {
+  id          String                @id @default(uuid()) @db.Uuid
+  complaintId String                @db.Uuid
+  actorId     String                @db.Uuid
+  type        ComplaintActivityType
+  fromStatus  ComplaintStatus?
+  toStatus    ComplaintStatus?
+  note        String?
+  createdAt   DateTime              @default(now())
+
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+
+  @@index([complaintId, createdAt])
+  @@map("complaint_activities")
+}
+
+model Notification {
+  id             String              @id @default(uuid()) @db.Uuid
+  societyId      String              @db.Uuid
+  userId         String              @db.Uuid
+  // Idempotency: same event + recipient + channel is only stored once.
+  dedupeKey      String
+  template       String
+  channel        NotificationChannel @default(IN_APP)
+  title          String
+  body           String
+  link           String?
+  deliveryStatus DeliveryStatus      @default(PENDING)
+  providerMsgId  String?
+  failureReason  String?
+  sentAt         DateTime?
+  readAt         DateTime?
+  createdAt      DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dedupeKey, userId, channel])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  societyId  String?  @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  society Society? @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Notice board: replaces WhatsApp broadcast noise with targeted, trackable notices.
+
+enum NoticeCategory {
+  GENERAL
+  MAINTENANCE_WORK
+  WATER
+  ELECTRICITY
+  MEETING
+  EVENT
+  SECURITY
+  RULES
+}
+
+enum NoticePriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+enum NoticeAudience {
+  ALL
+  BUILDING
+  OWNERS
+  TENANTS
+  COMMITTEE
+  STAFF
+}
+
+enum NoticeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Notice {
+  id          String         @id @default(uuid()) @db.Uuid
+  societyId   String         @db.Uuid
+  title       String
+  body        String
+  category    NoticeCategory @default(GENERAL)
+  priority    NoticePriority @default(NORMAL)
+  audience    NoticeAudience @default(ALL)
+  buildingId  String?        @db.Uuid
+  pinned      Boolean        @default(false)
+  // Ask readers to tap "Got it" (e.g. water shutdown) so the office knows who saw it.
+  requiresAck Boolean        @default(false)
+  status      NoticeStatus   @default(DRAFT)
+  publishedAt DateTime?
+  expiresAt   DateTime?
+  createdById String         @db.Uuid
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  society  Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  building Building?    @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  reads    NoticeRead[]
+
+  @@index([societyId, status, publishedAt])
+  @@map("notices")
+}
+
+model NoticeRead {
+  id             String    @id @default(uuid()) @db.Uuid
+  noticeId       String    @db.Uuid
+  userId         String    @db.Uuid
+  readAt         DateTime  @default(now())
+  acknowledgedAt DateTime?
+
+  notice Notice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([noticeId, userId])
+  @@map("notice_reads")
+}
+
+// ---------------------------------------------------------------------------
+// Parcel desk: gate logs parcels, residents get notified, handover needs the pickup code.
+
+enum ParcelStatus {
+  RECEIVED
+  NOTIFIED
+  COLLECTED
+  RETURNED
+}
+
+model Parcel {
+  id              String       @id @default(uuid()) @db.Uuid
+  societyId       String       @db.Uuid
+  number          Int
+  unitId          String       @db.Uuid
+  courier         String
+  trackingNumber  String?
+  description     String?
+  storageLocation String?
+  // 4-digit code shown only to the unit's residents; the gate asks for it at handover.
+  pickupCode      String
+  status          ParcelStatus @default(RECEIVED)
+  receivedById    String       @db.Uuid
+  receivedAt      DateTime     @default(now())
+  collectedAt     DateTime?
+  collectedByName String?
+  handedOverById  String?      @db.Uuid
+  returnedAt      DateTime?
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  unit    Unit    @relation(fields: [unitId], references: [id], onDelete: Restrict)
+
+  @@unique([societyId, number])
+  @@index([societyId, status])
+  @@index([unitId, status])
+  @@map("parcels")
+}

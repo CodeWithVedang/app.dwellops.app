@@ -1,0 +1,29 @@
+/** Plain-language labels for audit actions shown in the UI. Unknown actions fall back to the raw code. */
+const LABELS: Record<string, string> = {
+  "user.signup": "created an account",
+  "user.login": "signed in",
+  "society.created": "created the society",
+  "member.added": "added a member",
+  "member.invited": "sent an invite",
+  "member.joined": "joined the society",
+  "building.created": "added a building",
+  "unit.created": "added a unit",
+  "complaint.created": "raised a complaint",
+  "complaint.acknowledged": "acknowledged a complaint",
+  "complaint.assigned": "assigned a complaint",
+  "complaint.in_progress": "started work on a complaint",
+  "complaint.waiting": "put a complaint on hold",
+  "complaint.resolved": "resolved a complaint",
+  "complaint.closed": "closed a complaint",
+  "complaint.reopened": "reopened a complaint",
+  "complaint.cancelled": "cancelled a complaint",
+  "complaint.commented": "commented on a complaint",
+  "notice.drafted": "saved a notice draft",
+  "notice.published": "published a notice",
+  "notice.archived": "archived a notice",
+  "parcel.received": "logged a parcel",
+  "parcel.collected": "handed over a parcel",
+  "parcel.returned": "returned a parcel",
+};
+
+export const auditLabel = (action: string): string => LABELS[action] ?? action;
