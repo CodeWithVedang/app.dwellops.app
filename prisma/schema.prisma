@@ -527,6 +527,17 @@ model FileAsset {
   @@map("file_assets")
 }
 
+/// File bytes for the Postgres storage adapter (STORAGE_PROVIDER=postgres). Keyed by FileAsset.storageKey.
+/// Kept separate from file_assets so metadata queries never load file bytes.
+model FileBlob {
+  key         String   @id
+  content     Bytes
+  contentType String
+  createdAt   DateTime @default(now())
+
+  @@map("file_blobs")
+}
+
 model ComplaintAttachment {
   id          String   @id @default(uuid()) @db.Uuid
   complaintId String   @db.Uuid

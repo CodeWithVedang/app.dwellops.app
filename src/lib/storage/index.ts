@@ -2,6 +2,7 @@ import "server-only";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { db } from "@/lib/db/client";
 
 /** Replaceable binary store (PRD §30). Metadata lives in `file_assets`; bytes live here. */
 export interface FileStorage {
@@ -74,6 +75,29 @@ export class S3Storage implements FileStorage {
   }
 }
 
+/**
+ * Production without an object store: bytes in the `file_blobs` table. Private by construction
+ * (downloads go through the authorized route). Counts toward database size and backups.
+ */
+export class PostgresStorage implements FileStorage {
+  readonly name = "postgres";
+  async put(key: string, body: Uint8Array, contentType: string) {
+    assertSafeKey(key);
+    // Keys are unique per upload; upsert makes a retried upload idempotent.
+    const content = new Uint8Array(body);
+    await db.fileBlob.upsert({ where: { key }, create: { key, content, contentType }, update: { content, contentType } });
+  }
+  async get(key: string) {
+    assertSafeKey(key);
+    const row = await db.fileBlob.findUnique({ where: { key }, select: { content: true } });
+    return row ? new Uint8Array(row.content) : null;
+  }
+  async delete(key: string) {
+    assertSafeKey(key);
+    await db.fileBlob.deleteMany({ where: { key } });
+  }
+}
+
 const g = globalThis as unknown as { __nivasoStorage?: FileStorage };
 
 export function fileStorage(): FileStorage {
@@ -87,8 +111,9 @@ export function fileStorage(): FileStorage {
       accessKeyId: STORAGE_ACCESS_KEY,
       secretAccessKey: STORAGE_SECRET_KEY,
     });
-  } else if (process.env.NODE_ENV === "production" && process.env.STORAGE_PROVIDER !== "local") {
-    throw new Error("File storage is not configured. Set STORAGE_BUCKET, STORAGE_ACCESS_KEY and STORAGE_SECRET_KEY.");
+  } else if (process.env.STORAGE_PROVIDER === "postgres" || (process.env.NODE_ENV === "production" && process.env.STORAGE_PROVIDER !== "local")) {
+    // Production default when no bucket is configured: serverless hosts have no writable disk.
+    s = new PostgresStorage();
   } else {
     const dir = process.env.NODE_ENV === "test" ? ".storage/test" : ".storage/dev";
     s = new LocalDiskStorage(path.resolve(process.cwd(), dir));
