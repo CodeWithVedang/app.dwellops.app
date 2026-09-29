@@ -31,7 +31,7 @@ keeps same-site session cookies, and puts all always-on backend work on Render.
 
 ## 0. Before you start
 
-Accounts: GitHub, Render, Vercel, Resend.
+Accounts: GitHub, Render, Vercel, and Gmail or Resend for email.
 
 Check locally:
 
@@ -67,13 +67,31 @@ To move to a bucket later (Cloudflare R2, AWS S3), set `STORAGE_ENDPOINT`, `STOR
 `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY` and `STORAGE_REGION` on Vercel. New uploads then go to the
 bucket. Existing photos stay in `file_blobs` and must be copied over before you switch.
 
-## 2. Email (Resend)
+## 2. Email
+
+The app picks the first configured provider: `EMAIL_PROVIDER=console` (logs only) → SMTP → Resend.
+
+### Option A: Gmail SMTP (no domain needed)
+
+1. Google Account → Security → turn on **2-Step Verification**.
+2. Google Account → Security → **App passwords** (https://myaccount.google.com/apppasswords) →
+   create one named `Nivaso Plus`. Copy the 16-character password.
+3. Vercel env vars (Production): `SMTP_USER` = your Gmail address, `SMTP_PASSWORD` = the app password.
+   Optional: `SMTP_HOST` (default `smtp.gmail.com`), `SMTP_PORT` (default `465`), `EMAIL_FROM`
+   (default `Nivaso Plus <SMTP_USER>`; Gmail always sends from the signed-in address).
+4. Remove `EMAIL_PROVIDER` if it is set to `console`, then redeploy.
+
+Limits: about 500 recipients a day; emails show your Gmail address as the sender.
+
+### Option B: Resend (needs a domain you own)
 
 1. Resend → **Domains** → add and verify your domain (DNS records).
 2. Resend → **API keys** → create → `EMAIL_API_KEY`.
 3. `EMAIL_FROM` = `Nivaso Plus <no-reply@your-domain>` (verified domain only).
 
-Production throws on email send without `EMAIL_API_KEY`.
+Unset `SMTP_USER`/`SMTP_PASSWORD` when you switch, since SMTP wins when both are set.
+
+In production, sending fails (and is logged as `email send failed`) when no provider is configured.
 
 ---
 
@@ -171,7 +189,7 @@ This URL gives full database access. Store it only in Vercel env vars and your p
 | `DIRECT_DATABASE_URL` | same value |
 | `AUTH_SECRET` | 32+ random chars (section 0) |
 | `NEXT_PUBLIC_APP_URL` | `https://<project>.vercel.app` or your custom domain, no trailing slash |
-| `EMAIL_API_KEY`, `EMAIL_FROM` | section 2 |
+| `SMTP_USER`, `SMTP_PASSWORD` (or `EMAIL_API_KEY`, `EMAIL_FROM`) | section 2 |
 
 4. **Deploy**, then check `https://<project>.vercel.app/api/health` → `200`.
 
@@ -247,6 +265,7 @@ and expose no tenant data, config or secrets.
 | Vercel runtime: `ZodError` on `DATABASE_URL` / `AUTH_SECRET` | Missing or short env var | Set it; `AUTH_SECRET` needs 32+ chars |
 | Vercel `/api/health` 503, worker `/health` 200 | Wrong external URL, missing `sslmode=require`, or IP allow list | 3.4; Render DB → Networking → allow `0.0.0.0/0` |
 | Photo upload fails, `relation "file_blobs" does not exist` | Migration not applied | Redeploy the Render worker (it runs migrations) |
-| `EMAIL_API_KEY is required in production` | Resend key missing on Vercel | Section 2 |
+| `Email is not configured` in logs | No SMTP or Resend env vars on Vercel | Section 2 |
+| `Invalid login: 535` in logs | Wrong Gmail app password, or 2-Step Verification off | Create a new app password |
 | Invite links point to `localhost` | `NEXT_PUBLIC_APP_URL` unset at build time | Set it and redeploy |
 | Overdue alerts late by hours | Worker slept | Check worker logs for `worker.self_ping_failed`; enable the GitHub backup |

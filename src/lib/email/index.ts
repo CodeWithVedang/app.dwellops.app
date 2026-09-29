@@ -1,4 +1,5 @@
 import "server-only";
+import nodemailer, { type Transporter } from "nodemailer";
 import { logger } from "@/lib/logging/logger";
 
 export interface EmailMessage {
@@ -51,16 +52,47 @@ class ResendEmailProvider implements EmailProvider {
   }
 }
 
+/**
+ * Production without a sending domain: any SMTP server. Defaults fit Gmail
+ * (smtp.gmail.com:465, TLS) with a Google App Password as SMTP_PASSWORD.
+ */
+class SmtpEmailProvider implements EmailProvider {
+  readonly name = "smtp";
+  private readonly transport: Transporter;
+  constructor(
+    opts: { host: string; port: number; user: string; password: string },
+    private readonly from: string,
+  ) {
+    this.transport = nodemailer.createTransport({
+      host: opts.host,
+      port: opts.port,
+      secure: opts.port === 465,
+      auth: { user: opts.user, pass: opts.password },
+      connectionTimeout: 10_000,
+      socketTimeout: 15_000,
+    });
+  }
+  async send(msg: EmailMessage) {
+    const info = await this.transport.sendMail({ from: this.from, to: msg.to, subject: msg.subject, text: msg.text, html: msg.html });
+    return { id: info.messageId };
+  }
+}
+
 const g = globalThis as unknown as { __nivasoEmail?: EmailProvider };
 
 export function emailProvider(): EmailProvider {
   if (g.__nivasoEmail) return g.__nivasoEmail;
-  const key = process.env.EMAIL_API_KEY;
+  const { EMAIL_API_KEY: key, EMAIL_FROM, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD } = process.env;
   let provider: EmailProvider;
   if (process.env.NODE_ENV === "test") provider = new MemoryEmailProvider();
   else if (process.env.EMAIL_PROVIDER === "console") provider = new ConsoleEmailProvider(); // explicit opt-in (E2E, previews)
-  else if (key) provider = new ResendEmailProvider(key, process.env.EMAIL_FROM ?? "Nivaso Plus <no-reply@nivasoplus.app>");
-  else if (process.env.NODE_ENV === "production") throw new Error("EMAIL_API_KEY is required in production.");
+  else if (SMTP_USER && SMTP_PASSWORD)
+    provider = new SmtpEmailProvider(
+      { host: SMTP_HOST || "smtp.gmail.com", port: Number(SMTP_PORT || 465), user: SMTP_USER, password: SMTP_PASSWORD },
+      EMAIL_FROM || `Nivaso Plus <${SMTP_USER}>`,
+    );
+  else if (key) provider = new ResendEmailProvider(key, EMAIL_FROM ?? "Nivaso Plus <no-reply@nivasoplus.app>");
+  else if (process.env.NODE_ENV === "production") throw new Error("Email is not configured. Set SMTP_USER + SMTP_PASSWORD or EMAIL_API_KEY.");
   else provider = new ConsoleEmailProvider();
   g.__nivasoEmail = provider;
   return provider;
