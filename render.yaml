@@ -1,0 +1,57 @@
+# Render Blueprint: backend = PostgreSQL + worker (scheduled jobs, /health).
+# The Next.js frontend runs on Vercel (see vercel.json) and connects to this database.
+# Deploy with Render Dashboard → New → Blueprint → pick this repo.
+# Full guide: docs/deployment.md
+
+databases:
+  - name: nivaso-plus-db
+    plan: free # free DBs expire 30 days after creation; use basic-256mb or higher for production
+    region: singapore
+    databaseName: nivaso_plus
+    user: nivaso_plus
+    postgresMajorVersion: "16"
+    # Vercel functions have no fixed IPs, so the external URL must accept any address.
+    # Access is still protected by the generated password and TLS (use ?sslmode=require).
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: vercel-and-admin
+
+services:
+  - type: web # free plan has no background-worker type; a web service with /health does the same job
+    name: nivaso-plus-worker
+    runtime: node
+    plan: free # sleeps after 15 min without traffic; the worker pings its own URL to stay awake
+    region: singapore
+    branch: main
+    # --include=dev: NODE_ENV=production would otherwise skip devDependencies
+    # (prisma CLI for migrations, tsx to run the worker).
+    buildCommand: npm ci --include=dev && npx prisma migrate deploy
+    startCommand: npm run worker:start
+    healthCheckPath: /health
+    autoDeploy: true
+    # Redeploy only when backend code or the schema changes, not on UI-only commits.
+    buildFilter:
+      paths:
+        - src/worker/**
+        - src/server/**
+        - src/lib/**
+        - src/features/*/constants.ts
+        - prisma/**
+        - package.json
+        - package-lock.json
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nivaso-plus-db
+          property: connectionString
+      - key: DIRECT_DATABASE_URL
+        fromDatabase:
+          name: nivaso-plus-db
+          property: connectionString
+      - key: AUTH_SECRET # required by the shared env validation; the worker never signs sessions
+        generateValue: true

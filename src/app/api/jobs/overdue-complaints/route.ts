@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { runOverdueComplaintAlerts } from "@/server/jobs/overdueComplaints";
 
-// Called by Vercel Cron (see vercel.json), which sends `Authorization: Bearer $CRON_SECRET`.
+// Manual trigger; the Render worker (src/worker) runs this job on a schedule. Requires `Authorization: Bearer $CRON_SECRET`.
 export const dynamic = "force-dynamic";
 
 function authorized(req: Request): boolean {

@@ -1,0 +1,25 @@
+# Backup keep-alive for the Render worker. The worker already pings its own URL every 10 minutes;
+# this catches the case where it went to sleep anyway (e.g. after a Render restart during low traffic).
+#
+# Setup (repo → Settings → Secrets and variables → Actions → Variables):
+#   RENDER_WORKER_URL  e.g. https://nivaso-plus-worker.onrender.com
+name: Keep Render worker awake
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    if: ${{ vars.RENDER_WORKER_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping worker health endpoint
+        env:
+          URL: ${{ vars.RENDER_WORKER_URL }}
+        # First request after a sleep can take ~1 minute while the instance boots.
+        run: curl --fail --silent --show-error --max-time 120 --retry 2 --retry-delay 10 "$URL/health"

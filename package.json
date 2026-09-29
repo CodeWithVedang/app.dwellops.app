@@ -15,7 +15,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "postinstall": "prisma generate",
-    "test:e2e": "next build && playwright test"
+    "test:e2e": "next build && playwright test",
+    "worker:start": "node --conditions=react-server --import tsx src/worker/index.ts",
+    "worker:dev": "node --env-file=.env.local --conditions=react-server --import tsx src/worker/index.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1141.0",
