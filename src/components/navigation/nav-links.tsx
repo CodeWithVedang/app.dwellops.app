@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
@@ -47,6 +47,17 @@ function useActive() {
   return (i: NavItem) => (i.exact ? path === i.href : path === i.href || path.startsWith(`${i.href}/`));
 }
 
+/** Spinner shown on the clicked item until the new page is ready. Must render inside <Link>. */
+function PendingSpinner({ className = "" }: { className?: string }) {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span role="status" className={`size-3.5 shrink-0 animate-spin rounded-full border-2 border-current border-r-transparent ${className}`}>
+      <span className="sr-only">Loading</span>
+    </span>
+  );
+}
+
 function Badge({ n, className = "" }: { n?: number; className?: string }) {
   if (!n) return null;
   return (
@@ -87,6 +98,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
                       {active && <span className="absolute inset-y-2 -left-3 w-1 rounded-r-full bg-accent" aria-hidden />}
                       <Icon className={`size-[18px] shrink-0 ${active ? "text-accent" : "text-slate-500 group-hover:text-slate-300"}`} aria-hidden />
                       <span className="flex-1">{i.label}</span>
+                      <PendingSpinner className="text-accent" />
                       <Badge n={i.badge} />
                     </Link>
                   </li>
@@ -124,6 +136,7 @@ export function BottomNav({ items }: { items: NavItem[] }) {
                 <span className="relative">
                   <Icon className="size-[22px]" strokeWidth={active ? 2.3 : 1.8} aria-hidden />
                   <Badge n={i.badge} className="absolute -right-2.5 -top-1.5" />
+                  <PendingSpinner className="absolute -bottom-1 -right-2 bg-surface text-primary" />
                 </span>
                 {i.short ?? i.label}
               </Link>

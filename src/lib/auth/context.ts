@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { SocietyRole } from "@/generated/prisma/enums";
 import { db } from "@/lib/db/client";
 import { forbidden } from "@/lib/errors";
@@ -16,7 +17,11 @@ export interface SocietyContext {
   memberIds: string[];
 }
 
-export async function loadSocietyContext(user: SessionUser, slug: string): Promise<SocietyContext> {
+/**
+ * Cached per request: the layout and the page both need it, so one navigation runs the
+ * membership query once. `user` comes from the cached session lookup, so the key matches.
+ */
+export const loadSocietyContext = cache(async (user: SessionUser, slug: string): Promise<SocietyContext> => {
   const society = await db.society.findUnique({
     where: { slug },
     select: {
@@ -36,7 +41,7 @@ export async function loadSocietyContext(user: SessionUser, slug: string): Promi
     roles: society.members.map((m) => m.role),
     memberIds: society.members.map((m) => m.id),
   };
-}
+});
 
 export async function requireSocietyContext(slug: string): Promise<SocietyContext> {
   return loadSocietyContext(await requireUser(), slug);
